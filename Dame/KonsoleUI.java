@@ -118,8 +118,6 @@ public class KonsoleUI implements UI
             liste_zuege = this.spiel.getSpielbrett().getBrett()[coords_numeric[0]][coords_numeric[1]].getPossibleSchlagMoves();
         }
 
-
-
         for (int i = 0; i < liste_zuege.size(); i++)
         {
             int ziel_coords[] = liste_zuege.get(i);
@@ -177,21 +175,27 @@ public class KonsoleUI implements UI
                                 }
                             }
 
-                            
-                            if (this.spiel.getCurrentSpieler() == this.spiel.getSpieler1())
+                            // Spiel geht nur weiter, wenn beide Spieler noch Steine haben ...
+                            if ((this.spiel.getSpieler1().countSteineGesamt() > 0) && (this.spiel.getSpieler2().countSteineGesamt() > 0))
                             {
-                                this.spiel.setCurrentSpieler(this.spiel.getSpieler2());
+                                if (this.spiel.getCurrentSpieler() == this.spiel.getSpieler1())
+                                {
+                                    this.spiel.setCurrentSpieler(this.spiel.getSpieler2());
+                                }
+                                else
+                                {
+                                    this.spiel.setCurrentSpieler(this.spiel.getSpieler1());
+                                }
+
+                                this.spiel.resetSteinWahl();
+
+                                this.displayMainGameMenu();
                             }
                             else
                             {
-                                this.spiel.setCurrentSpieler(this.spiel.getSpieler1());
+                                this.drawGameEndScreen();
                             }
-
-                            this.spiel.resetSteinWahl();
-
-                            this.displayMainGameMenu();
                         }
-
                     }
                 }
             }
@@ -299,9 +303,55 @@ public class KonsoleUI implements UI
         this.drawSpielfeld();
     }
 
+    public void drawGameEndScreen()
+    {
+        String name_winner = this.spiel.getSpieler1().getName().toUpperCase();
+        String name_loser = this.spiel.getSpieler2().getName();
+        
+        if (this.spiel.getSpieler1().countSteineGesamt() == 0)
+        {
+            name_winner = this.spiel.getSpieler2().getName().toUpperCase();
+            name_loser = this.spiel.getSpieler1().getName();
+        }
+        
+        System.out.println("\f\n     " + name_winner + " GEWINNT!!!1111elf");
+        System.out.println("	 ... und schickt " + name_loser + " in die Offline-Halle!\n");
+        System.out.println("        *     (   +      *.  . )");
+        System.out.println("           )    .  ____+      (   *  ");
+        System.out.println("       .  (  \\||  (//\\_ \\.\\|/       .");
+        System.out.println("        + .-\"-\\ \\ `a,a `/ / | + (");
+        System.out.println("         /     \\ \\ \\O_ / / /     )  +");
+        System.out.println("      .  |#    |\\ \\_) (_/ / * .-\"-. )");
+        System.out.println("          \\___/  \\       /   /#    \\  (  ");
+        System.out.println("       *   /^     \\.&&&./  . |     |");
+        System.out.println("          (    *  |  &  |*    \\___/");
+        System.out.println("      .    \\      |__&__|  '    ^\\   + ");
+        System.out.println("            )     | \\_/ |     ) . )");
+        System.out.println("        *    . @%@%@%@%@%@%@ (   (");
+        System.out.println("        (      {           }  )      *");
+        System.out.println("         ) *   {           }     +  (");
+        System.out.println("        (    @%@%@%@%@%@%@%@%@       ) '");
+        System.out.println("      +      {               }  *   (");
+        System.out.println("             {   .........   }   ");
+        System.out.println("             {               }        (");
+        System.out.println("     *      @%@%@%@%@%@%@%@%@%@    +");
+        
+        new Scanner(System.in).nextLine();
+        
+        this.displayMainMenu();
+    }
+
     public void drawSpielfeld()
     {
         Spielbrett brett = this.spiel.getSpielbrett();
+        String spieler1_color = "weiß";
+        String spieler2_color = "schwarz";
+
+        if (this.spiel.getSpieler1().getColor() == 's')
+        {
+            spieler1_color = "schwarz";
+            spieler2_color = "weiß";
+        }
 
         for (int i = 7; i >= 0; i--)
         {
@@ -337,7 +387,7 @@ public class KonsoleUI implements UI
                         {
                             spielstein_string += "*";
                         }
-                        
+
                     }
                     else
                     {
@@ -345,9 +395,9 @@ public class KonsoleUI implements UI
                         {
                             spielstein_string += " ";
                         }
-                        
+
                     }
-                    
+
                     if (brett.getBrett()[i][k].getIsDame())
                     {
                         if (spielstein_string.length() == 1)
@@ -358,7 +408,7 @@ public class KonsoleUI implements UI
                         {
                             System.out.print(spielstein_string + "|");
                         }
-                        
+
                     }
                     else
                     {
@@ -372,11 +422,53 @@ public class KonsoleUI implements UI
 
                 if (k == 7)
                 {
+                    if (i == 7)
+                    {
+                        System.out.print("     Spielstand:");
+                    }
+
+                    if (i == 6)
+                    {
+                        System.out.print("     " + this.spiel.getSpieler1().getName() + " (" + spieler1_color + ")");
+                    }
+
+                    if (i == 5)
+                    {
+                        System.out.print("     Normale Steine:  " + this.spiel.getSpieler1().countNormaleSteine());
+                    }
+
+                    if (i == 4)
+                    {
+                        System.out.print("     " + this.spiel.getSpieler2().getName() + " (" + spieler2_color + ")");
+                    }
+
+                    if (i == 3)
+                    {
+                        System.out.print("     Normale Steine:  " + this.spiel.getSpieler2().countNormaleSteine());
+                    }
+
                     System.out.print("\n");
                 }
             }
 
-            System.out.print("  +---+---+---+---+---+---+---+---+\n");
+            System.out.print("  +---+---+---+---+---+---+---+---+");
+
+            if (i == 7)
+            {
+                System.out.print("     -------------------");
+            }
+
+            if (i == 6)
+            {
+                System.out.print("     Damen:           " + this.spiel.getSpieler1().countDamen());
+            }
+
+            if (i == 4)
+            {
+                System.out.print("     Damen:           " + this.spiel.getSpieler2().countDamen());
+            }
+
+            System.out.print("\n");
         }
 
         System.out.print("    a   b   c   d   e   f   g   h");

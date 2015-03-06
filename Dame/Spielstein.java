@@ -29,7 +29,7 @@ public class Spielstein
     {
         return this.isDame;
     }
-    
+
     public void setIsDame(boolean isDame)
     {
         this.isDame = isDame;
@@ -69,7 +69,7 @@ public class Spielstein
 
         int zeile = this.getPosition()[0];
         int spalte = this.getPosition()[1];
-        
+
         // Einfache Spielesteine
         if (!this.getIsDame())
         {
@@ -195,7 +195,7 @@ public class Spielstein
                             // Zwischenfeld besetzt?
                             if (this.spielbrett.getBrett()[(zeile + 1)][(spalte - 1)] != null)
                             {
-                                // Weißer Stein?
+                                // Schwarzer Stein?
                                 if (this.spielbrett.getBrett()[(zeile + 1)][(spalte - 1)].getColor() == 's')
                                 {
                                     kannSchlagen = true;
@@ -224,7 +224,7 @@ public class Spielstein
                             // Zwischenfeld besetzt?
                             if (this.spielbrett.getBrett()[(zeile + 1)][(spalte + 1)] != null)
                             {
-                                // Weißer Stein?
+                                // Schwarzer Stein?
                                 if (this.spielbrett.getBrett()[(zeile + 1)][(spalte + 1)].getColor() == 's')
                                 {
                                     kannSchlagen = true;
@@ -288,18 +288,220 @@ public class Spielstein
         else
         {
             // Code für Damen
+            boolean kannSchlagen = false;
+            char gegner_color = 's';
+
+            if (this.getColor() == 's')
+            {
+                gegner_color = 'w';
+            }
+
+            // Prüfen, ob der Stein diagonal einen Stein links unter ihm schlagen könnte
+            // Ist mindestens 2 Felder vom Rand entfernt..
+            if (spalte > 1)
+            {
+                if (zeile > 1)
+                {
+                    // Zielfeld leer?
+                    if (this.spielbrett.getBrett()[(zeile - 2)][(spalte - 2)] == null)
+                    {
+                        // Zwischenfeld besetzt?
+                        if (this.spielbrett.getBrett()[(zeile - 1)][(spalte - 1)] != null)
+                        {
+                            // Gegnerischer Stein?
+                            if (this.spielbrett.getBrett()[(zeile - 1)][(spalte - 1)].getColor() == gegner_color)
+                            {
+                                kannSchlagen = true;
+
+                                int pos[] = new int[3];
+                                pos[0] = zeile - 2;
+                                pos[1] = spalte - 2;
+                                pos[2] = 1; // Schlag-Move
+
+                                positions.add(pos);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Prüfen, ob der Stein diagonal einen Stein rechts unter ihm schlagen könnte
+            // Ist mindestens 2 Felder vom Rand entfernt..
+            if (spalte < 6)
+            {
+                if (zeile > 1)
+                {
+                    // Zielfeld leer?
+                    if (this.spielbrett.getBrett()[(zeile - 2)][(spalte + 2)] == null)
+                    {
+                        // Zwischenfeld besetzt?
+                        if (this.spielbrett.getBrett()[(zeile - 1)][(spalte + 1)] != null)
+                        {
+                            // Gegnerischer Stein?
+                            if (this.spielbrett.getBrett()[(zeile - 1)][(spalte + 1)].getColor() == gegner_color)
+                            {
+                                kannSchlagen = true;
+
+                                int pos[] = new int[3];
+                                pos[0] = zeile - 2;
+                                pos[1] = spalte + 2;
+                                pos[2] = 1; // Schlag-Move
+
+                                positions.add(pos);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (spalte > 1)
+            {
+                if (zeile < 6)
+                {
+                    // Zielfeld leer?
+                    if (this.spielbrett.getBrett()[(zeile + 2)][(spalte - 2)] == null)
+                    {
+                        // Zwischenfeld besetzt?
+                        if (this.spielbrett.getBrett()[(zeile + 1)][(spalte - 1)] != null)
+                        {
+                            // Gegnerischer Stein?
+                            if (this.spielbrett.getBrett()[(zeile + 1)][(spalte - 1)].getColor() == gegner_color)
+                            {
+                                kannSchlagen = true;
+
+                                int pos[] = new int[3];
+                                pos[0] = zeile + 2;
+                                pos[1] = spalte - 2;
+                                pos[2] = 1; // Schlag-Move
+
+                                positions.add(pos);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Prüfen, ob der Stein diagonal einen Stein rechts über ihm schlagen könnte
+            // Ist mindestens 2 Felder vom Rand entfernt..
+            if (spalte < 6)
+            {
+                if (zeile < 6)
+                {
+                    // Zielfeld leer?
+                    if (this.spielbrett.getBrett()[(zeile + 2)][(spalte + 2)] == null)
+                    {
+                        // Zwischenfeld besetzt?
+                        if (this.spielbrett.getBrett()[(zeile + 1)][(spalte + 1)] != null)
+                        {
+                            // Gegnerischer Stein?
+                            if (this.spielbrett.getBrett()[(zeile + 1)][(spalte + 1)].getColor() == gegner_color)
+                            {
+                                kannSchlagen = true;
+
+                                int pos[] = new int[3];
+                                pos[0] = zeile + 2;
+                                pos[1] = spalte + 2;
+                                pos[2] = 1; // Schlag-Move
+
+                                positions.add(pos);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!kannSchlagen)
+            {
+                // Prüfen, ob der Stein diagonal ein Feld nach unten links bewegt werden kann
+                // Klebt nicht am linken Rand..
+                if (spalte > 0)
+                {
+                    if (zeile > 0)
+                    {
+                        // Zielfeld leer?
+                        if (this.spielbrett.getBrett()[(zeile - 1)][(spalte - 1)] == null)
+                        {
+                            int pos[] = new int[3];
+                            pos[0] = zeile - 1;
+                            pos[1] = spalte - 1;
+                            pos[2] = 0; // Schlag-Move
+
+                            positions.add(pos);
+                        }
+                    }
+                }
+
+                // Prüfen, ob der Stein diagonal ein Feld nach unten rechts bewegt werden kann
+                // Klebt nicht am rechten Rand..
+
+                if (spalte < 7)
+                {
+                    if (zeile > 0)
+                    {
+                        // Zielfeld leer?
+                        if (this.spielbrett.getBrett()[(zeile - 1)][(spalte + 1)] == null)
+                        {
+                            int pos[] = new int[3];
+                            pos[0] = zeile - 1;
+                            pos[1] = spalte + 1;
+                            pos[2] = 0; // Schlag-Move
+
+                            positions.add(pos);
+                        }
+                    }
+                }
+
+                // Prüfen, ob der Stein diagonal ein Feld nach oben links bewegt werden kann
+                // Klebt nicht am linken Rand..
+                if (spalte > 0)
+                {
+                    if (zeile < 7)
+                    {
+                        // Zielfeld leer?
+                        if (this.spielbrett.getBrett()[(zeile + 1)][(spalte - 1)] == null)
+                        {
+                            int pos[] = new int[3];
+                            pos[0] = zeile + 1;
+                            pos[1] = spalte - 1;
+                            pos[2] = 0; // Schlag-Move
+
+                            positions.add(pos);
+                        }
+                    }
+                }
+
+                // Prüfen, ob der Stein diagonal ein Feld nach oben rechts bewegt werden kann
+                // Klebt nicht am rechten Rand..
+
+                if (spalte < 7)
+                {
+                    if (zeile < 7)
+                    {
+                        // Zielfeld leer?
+                        if (this.spielbrett.getBrett()[(zeile + 1)][(spalte + 1)] == null)
+                        {
+                            int pos[] = new int[3];
+                            pos[0] = zeile + 1;
+                            pos[1] = spalte + 1;
+                            pos[2] = 0; // Schlag-Move
+
+                            positions.add(pos);
+                        }
+                    }
+                }
+            }
         }
-        
+
         return positions;
     }
-    
+
     public ArrayList<int[]> getPossibleSchlagMoves()
     {
         boolean kann_schlagen = false;
-        
+
         ArrayList<int[]> possible_moves = this.getPossibleMoves();
         ArrayList<int[]> possible_schlag_moves = new ArrayList<int[]>();
-        
+
         for (int[] move : possible_moves)
         {
             // Wenn Schlag-Move möglich
@@ -308,11 +510,11 @@ public class Spielstein
                 possible_schlag_moves.add(move);
             }
         }
-        
+
         return possible_schlag_moves;
-        
+
     }
-    
+
     /**
      * moveTo - bewegt den Stein an die angegebene Position, gibt weiterhin zurück, ob mit diesem Zug ein gegnerischer Stein geschlagen wurde.
      *
@@ -324,32 +526,38 @@ public class Spielstein
     public boolean moveTo(int zeile, int spalte)
     {
         boolean geschlagen = false;
-        
+
         int alte_zeile = this.getPosition()[0];
         int alte_spalte = this.getPosition()[1];
-        
+
         this.spielbrett.getBrett()[zeile][spalte] = this;
         this.spielbrett.getBrett()[alte_zeile][alte_spalte] = null;
-        
-        if (!this.isDame)
+
+        // Falls Damen irgendwann mal mehrere Felder springen können sollen, else-Zweig hinzufügen...
+        //if (!this.isDame)
+        if (true)
         {
             if (Math.abs(alte_zeile - zeile) == 2)
             {
                 int zwischen_zeile = (alte_zeile + zeile) / 2;
                 int zwischen_spalte = (alte_spalte + spalte) / 2;
-                
+
                 this.spielbrett.getBrett()[zwischen_zeile][zwischen_spalte] = null;
                 geschlagen = true;
             }
-            
+
             // Umwandlung zu einer Dame, wenn Stein am oberen bzw. unteren Spielfeldrand (je nachdem ob schwarz oder weiß) angekommen ist.
             if (((this.getColor() == 'w') && (zeile == 7)) || ((this.getColor() == 's') && (zeile == 0)))
             {
-                this.setIsDame(true);
-                geschlagen = false;
+                // Nur, wenn Stein noch keine Dame ist ausführen.. (da zusätzliche Schlagmöglichkeiten sonst weggenommen werden würden)
+                if (!this.getIsDame())
+                {
+                    this.setIsDame(true);
+                    geschlagen = false;
+                }
             }
         }
-        
+
         return geschlagen;
     }
 

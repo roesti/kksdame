@@ -17,8 +17,8 @@ public class Spiel
     {
         this.ui = new KonsoleUI(this);
         this.spielbrett = new Spielbrett();
-        this.spieler1 = new Spieler();
-        this.spieler2 = new Spieler();
+        this.spieler1 = new Spieler(this);
+        this.spieler2 = new Spieler(this);
 
         this.ui.displayMainMenu();
     }
@@ -36,6 +36,7 @@ public class Spiel
     public void startGame()
     {
         this.spielbrett.resetBrett();
+        this.resetSteinWahl();
         this.ui.displayStartGameMenu();
 
         // Zufällige Bestimmung, welcher Spieler welche Farbe erhält
