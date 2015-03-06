@@ -329,9 +329,9 @@ public class KonsoleUI implements UI
 
                     if (brett.getBrett()[i][k].getAusgewaehlt() == true)
                     {
-                        if (brett.getBrett()[i][k].isDame())
+                        if (brett.getBrett()[i][k].getIsDame())
                         {
-                            spielstein_string = "[" + spiel_stein_string + "]";
+                            spielstein_string = "[" + spielstein_string + "]";
                         }
                         else
                         {
@@ -341,16 +341,16 @@ public class KonsoleUI implements UI
                     }
                     else
                     {
-                        if (!brett.getBrett()[i][k].isDame())
+                        if (!brett.getBrett()[i][k].getIsDame())
                         {
                             spielstein_string += " ";
                         }
                         
                     }
                     
-                    if (brett.getBrett()[i][k].isDame())
+                    if (brett.getBrett()[i][k].getIsDame())
                     {
-                        if (spiel_stein_string.length() == 1)
+                        if (spielstein_string.length() == 1)
                         {
                             System.out.print("(" + spielstein_string + ")|");
                         }
