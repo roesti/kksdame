@@ -4,7 +4,6 @@ import javax.swing.*;
 class ImagePanel extends JPanel {
 
     private Image img;
-    private Spielstein stein;
 
     public ImagePanel(String img)
     {
@@ -32,16 +31,6 @@ class ImagePanel extends JPanel {
         setSize(size);
         setLayout(null);
         setOpaque(false);
-    }
-    
-    public void setSpielstein(Spielstein stein)
-    {
-        this.stein = stein;
-    }
-    
-    public Spielstein getSpielstein()
-    {
-        return this.stein;
     }
 
     public void paintComponent(Graphics g)
