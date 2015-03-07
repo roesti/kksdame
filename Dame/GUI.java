@@ -33,10 +33,16 @@ public class GUI implements UI, MouseListener
     private JLabel spielstandLabel;
     private JLabel spielstandSpieler1Label;
     private JLabel spielstandSpieler1Damen;
+    private JLabel spielstandSpieler1DamenValue;
     private JLabel spielstandSpieler1Steine;
+    private JLabel spielstandSpieler1SteineValue;
     private JLabel spielstandSpieler2Label;
     private JLabel spielstandSpieler2Damen;
+    private JLabel spielstandSpieler2DamenValue;
     private JLabel spielstandSpieler2Steine;
+    private JLabel spielstandSpieler2SteineValue;
+    private JButton newGameButton;
+    private JButton exitButton;
 
     /**
      * Constructor for objects of class KonsoleUI
@@ -158,18 +164,18 @@ public class GUI implements UI, MouseListener
         int spalten = this.spiel.getSpielbrett().getBrett()[0].length;
 
         this.mainWindow = new JFrame();
-        mainWindow.setSize(1100, 800);
+        this.mainWindow.setSize(1075, 680);
 
-        mainWindow.setContentPane(new ImagePanel(this.game_background));
-        mainWindow.getContentPane().setLayout(null);
-        mainWindow.setResizable(false);
-        mainWindow.setLocationRelativeTo(null);
+        this.mainWindow.setContentPane(new ImagePanel(this.game_background));
+        this.mainWindow.getContentPane().setLayout(null);
+        this.mainWindow.setResizable(false);
+        this.mainWindow.setLocationRelativeTo(null);
+        this.mainWindow.setTitle("KKSDame 0.1 by 12FO3");
 
         this.checkerBoard = new JPanel();
-        checkerBoard.setSize(68 * spalten, 68 * zeilen);
-        checkerBoard.setLocation(50, 50);
-        mainWindow.setTitle("KKSDame 0.1 by 12FO3");
-        checkerBoard.setLayout(new GridLayout(zeilen, spalten));
+        this.checkerBoard.setSize(68 * spalten, 68 * zeilen);
+        this.checkerBoard.setLocation(50, 50);
+        this.checkerBoard.setLayout(new GridLayout(zeilen, spalten));
         Color temp;
 
         for (int i = 0; i < zeilen; i++)
@@ -288,7 +294,7 @@ public class GUI implements UI, MouseListener
             col_top_label.setSize(50, 40);
             col_top_label.setFont(new Font("Arial", Font.BOLD, 14));
             col_top_label.setHorizontalTextPosition(JLabel.LEFT);
-            mainWindow.getContentPane().add(col_top_label);
+            this.mainWindow.getContentPane().add(col_top_label);
 
             JLabel col_bottom_label = new JLabel(letter);
             col_bottom_label.setLayout(null);
@@ -296,45 +302,146 @@ public class GUI implements UI, MouseListener
             col_bottom_label.setSize(50, 40);
             col_bottom_label.setFont(new Font("Arial", Font.BOLD, 14));
             col_bottom_label.setHorizontalTextPosition(JLabel.LEFT);
-            mainWindow.getContentPane().add(col_bottom_label);
-
+            this.mainWindow.getContentPane().add(col_bottom_label);
         }
         
-        String color = "schwarz";
+        String color_spieler_current = "schwarz";
+        String color_spieler_1 = "schwarz";
+        String color_spieler_2 = "schwarz";
         
         if (this.spiel.getCurrentSpieler().getColor() == 'w')
         {
-            color = "weiß";
+            color_spieler_current = "weiß";
+        }
+        
+        if (this.spiel.getSpieler1().getColor() == 'w')
+        {
+            color_spieler_1 = "weiß";
+        }
+        
+        if (this.spiel.getSpieler2().getColor() == 'w')
+        {
+            color_spieler_2 = "weiß";
         }
 
-        this.zugStatusLabel = new JLabel(this.spiel.getCurrentSpieler().getName() + " (" + color + ") ist am Zug!");
-        zugStatusLabel.setLayout(null);
-        zugStatusLabel.setLocation(700, 40);
-        zugStatusLabel.setSize(300, 30);
-        zugStatusLabel.setFont(new Font("Arial", Font.PLAIN, 20));
-        zugStatusLabel.setHorizontalTextPosition(JLabel.LEFT);
+        this.zugStatusLabel = new JLabel(this.spiel.getCurrentSpieler().getName() + " (" + color_spieler_current + ") ist am Zug!");
+        this.zugStatusLabel.setLayout(null);
+        this.zugStatusLabel.setLocation(700, 40);
+        this.zugStatusLabel.setSize(300, 30);
+        this.zugStatusLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        this.zugStatusLabel.setForeground(Color.red);
+        this.zugStatusLabel.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(zugStatusLabel);
         
         this.spielstandLabel = new JLabel("Spielstand:");
-        spielstandLabel.setLayout(null);
-        spielstandLabel.setLocation(700, 80);
-        spielstandLabel.setSize(300, 30);
-        spielstandLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        spielstandLabel.setHorizontalTextPosition(JLabel.LEFT);
+        this.spielstandLabel.setLayout(null);
+        this.spielstandLabel.setLocation(700, 110);
+        this.spielstandLabel.setSize(300, 30);
+        this.spielstandLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        this.spielstandLabel.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandLabel);
         
+        this.spielstandSpieler1Label = new JLabel(this.spiel.getSpieler1().getName() + " (" + color_spieler_1 + ")");
+        this.spielstandSpieler1Label.setLayout(null);
+        this.spielstandSpieler1Label.setLocation(700, 160);
+        this.spielstandSpieler1Label.setSize(300, 30);
+        this.spielstandSpieler1Label.setFont(new Font("Arial", Font.BOLD, 16));
+        this.spielstandSpieler1Label.setHorizontalTextPosition(JLabel.LEFT);
+        this.mainWindow.getContentPane().add(spielstandSpieler1Label);
         
+        this.spielstandSpieler1Damen = new JLabel("Damen:");
+        this.spielstandSpieler1Damen.setLayout(null);
+        this.spielstandSpieler1Damen.setLocation(700, 185);
+        this.spielstandSpieler1Damen.setSize(300, 30);
+        this.spielstandSpieler1Damen.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.spielstandSpieler1Damen.setHorizontalTextPosition(JLabel.LEFT);
+        this.mainWindow.getContentPane().add(spielstandSpieler1Damen);
         
+        this.spielstandSpieler1DamenValue = new JLabel(new Integer(this.spiel.getSpieler1().countDamen()).toString());
+        this.spielstandSpieler1DamenValue.setLayout(null);
+        this.spielstandSpieler1DamenValue.setLocation(900, 185);
+        this.spielstandSpieler1DamenValue.setSize(300, 30);
+        this.spielstandSpieler1DamenValue.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.spielstandSpieler1DamenValue.setHorizontalTextPosition(JLabel.RIGHT);
+        this.mainWindow.getContentPane().add(spielstandSpieler1DamenValue);
         
-        /*private JLabel zugStatusLabel;
-
-        private JLabel spielstandLabel;
-        private JLabel spielstandSpieler1Label;
-        private JLabel spielstandSpieler1Damen;
-        private JLabel spielstandSpieler1Steine;
-        private JLabel spielstandSpieler2Label;
-        private JLabel spielstandSpieler2Damen;
-        private JLabel spielstandSpieler2Steine;*/
+        this.spielstandSpieler1Steine = new JLabel("Normale Steine:");
+        this.spielstandSpieler1Steine.setLayout(null);
+        this.spielstandSpieler1Steine.setLocation(700, 210);
+        this.spielstandSpieler1Steine.setSize(300, 30);
+        this.spielstandSpieler1Steine.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.spielstandSpieler1Steine.setHorizontalTextPosition(JLabel.LEFT);
+        this.mainWindow.getContentPane().add(spielstandSpieler1Steine);
+        
+        this.spielstandSpieler1SteineValue = new JLabel(new Integer(this.spiel.getSpieler1().countNormaleSteine()).toString());
+        this.spielstandSpieler1SteineValue.setLayout(null);
+        this.spielstandSpieler1SteineValue.setLocation(900, 210);
+        this.spielstandSpieler1SteineValue.setSize(300, 30);
+        this.spielstandSpieler1SteineValue.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.spielstandSpieler1SteineValue.setHorizontalTextPosition(JLabel.RIGHT);
+        this.mainWindow.getContentPane().add(spielstandSpieler1SteineValue);
+        
+        this.spielstandSpieler2Label = new JLabel(this.spiel.getSpieler2().getName() + " (" + color_spieler_2 + ")");
+        this.spielstandSpieler2Label.setLayout(null);
+        this.spielstandSpieler2Label.setLocation(700, 250);
+        this.spielstandSpieler2Label.setSize(300, 30);
+        this.spielstandSpieler2Label.setFont(new Font("Arial", Font.BOLD, 16));
+        this.spielstandSpieler2Label.setHorizontalTextPosition(JLabel.LEFT);
+        this.mainWindow.getContentPane().add(spielstandSpieler2Label);
+        
+        this.spielstandSpieler2Damen = new JLabel("Damen:");
+        this.spielstandSpieler2Damen.setLayout(null);
+        this.spielstandSpieler2Damen.setLocation(700, 275);
+        this.spielstandSpieler2Damen.setSize(300, 30);
+        this.spielstandSpieler2Damen.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.spielstandSpieler2Damen.setHorizontalTextPosition(JLabel.LEFT);
+        this.mainWindow.getContentPane().add(spielstandSpieler2Damen);
+        
+        this.spielstandSpieler2DamenValue = new JLabel(new Integer(this.spiel.getSpieler2().countDamen()).toString());
+        this.spielstandSpieler2DamenValue.setLayout(null);
+        this.spielstandSpieler2DamenValue.setLocation(900, 275);
+        this.spielstandSpieler2DamenValue.setSize(300, 30);
+        this.spielstandSpieler2DamenValue.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.spielstandSpieler2DamenValue.setHorizontalTextPosition(JLabel.RIGHT);
+        this.mainWindow.getContentPane().add(spielstandSpieler2DamenValue);
+        
+        this.spielstandSpieler2Steine = new JLabel("Normale Steine:");
+        this.spielstandSpieler2Steine.setLayout(null);
+        this.spielstandSpieler2Steine.setLocation(700, 300);
+        this.spielstandSpieler2Steine.setSize(300, 30);
+        this.spielstandSpieler2Steine.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.spielstandSpieler2Steine.setHorizontalTextPosition(JLabel.LEFT);
+        this.mainWindow.getContentPane().add(spielstandSpieler2Steine);
+        
+        this.spielstandSpieler2SteineValue = new JLabel(new Integer(this.spiel.getSpieler2().countNormaleSteine()).toString());
+        this.spielstandSpieler2SteineValue.setLayout(null);
+        this.spielstandSpieler2SteineValue.setLocation(900, 300);
+        this.spielstandSpieler2SteineValue.setSize(300, 30);
+        this.spielstandSpieler2SteineValue.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.spielstandSpieler2SteineValue.setHorizontalTextPosition(JLabel.RIGHT);
+        this.mainWindow.getContentPane().add(spielstandSpieler2SteineValue);
+        
+        this.newGameButton = new JButton("Neues Spiel");
+        this.newGameButton.setLayout(null);
+        this.newGameButton.setLocation(700, 553);
+        this.newGameButton.setSize(150, 40);
+        this.newGameButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.mainWindow.getContentPane().add(newGameButton);
+        
+        this.exitButton = new JButton("Beenden");
+        this.exitButton.setLayout(null);
+        this.exitButton.setLocation(870, 553);
+        this.exitButton.setSize(150, 40);
+        this.exitButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.exitButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent e)
+            {
+                System.exit(0);
+            }
+        });
+        this.mainWindow.getContentPane().add(exitButton);
+        
 
         mainWindow.setVisible(true);
     }

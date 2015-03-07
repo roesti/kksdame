@@ -1,3 +1,5 @@
+import java.awt.*;
+import javax.swing.*;
 
 /**
  * Write a description of class Spiel here.
@@ -23,7 +25,7 @@ public class Spiel
         {
             this.ui = new KonsoleUI(this);
         }
-        
+
         this.spielbrett = new Spielbrett();
         this.spieler1 = new Spieler(this);
         this.spieler2 = new Spieler(this);
@@ -35,7 +37,7 @@ public class Spiel
     {
         return this.current_spieler;
     }
-    
+
     public void setCurrentSpieler(Spieler spieler)
     {
         this.current_spieler = spieler;
@@ -66,14 +68,14 @@ public class Spiel
         this.ui.displayMainGameMenu();
 
     }
-    
+
     public int[] getSteinCoordsGewaehlt()
     {
         int coords[] = new int[2];
-        
+
         coords[0] = 0;
         coords[1] = 0;
-        
+
         for (int i = 0; i < 8; i++)
         {
             for (int k = 0; k < 8; k++)
@@ -88,14 +90,14 @@ public class Spiel
                 }
             }
         }
-        
+
         return coords;
     }
-    
+
     public boolean checkSteinGewaehlt()
     {
         boolean steinGewaehlt = false;
-        
+
         for (int i = 0; i < 8; i++)
         {
             for (int k = 0; k < 8; k++)
@@ -109,7 +111,7 @@ public class Spiel
                 }
             }
         }
-        
+
         return steinGewaehlt;
     }
 
@@ -135,7 +137,12 @@ public class Spiel
     // instance variables - replace the example below with your own
     public static void main(String args[])
     {
-        if (args.length == 0)
+
+        Object[] options = {"Konsole", "GUI"};
+        
+        int start_version = JOptionPane.showOptionDialog(null, "Welche Version willst Du starten?", "KKSDame 0.1", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+        if (start_version == 0)
         {
             Spiel spiel = new Spiel(false);
         }
@@ -143,7 +150,7 @@ public class Spiel
         {
             Spiel spiel = new Spiel(true);
         }
-        
+
     }
 
     public Spieler getSpieler1()
