@@ -170,7 +170,7 @@ public class GUI implements UI, MouseListener
         this.mainWindow.getContentPane().setLayout(null);
         this.mainWindow.setResizable(false);
         this.mainWindow.setLocationRelativeTo(null);
-        this.mainWindow.setTitle("KKSDame 0.1 by 12FO3");
+        this.mainWindow.setTitle("KKSDame 0.1 by 12FO3 (GUI)");
 
         this.checkerBoard = new JPanel();
         this.checkerBoard.setSize(68 * spalten, 68 * zeilen);

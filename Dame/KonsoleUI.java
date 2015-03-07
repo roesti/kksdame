@@ -60,7 +60,7 @@ public class KonsoleUI implements UI
     // Hauptmenü-Ausgabe
     public void displayMainMenu()
     {   
-        System.out.println("\fWillkommen zu KKSDame 0.1 by 12FO3!\n");
+        System.out.println("\fWillkommen zu KKSDame 0.1 by 12FO3 (KonsoleUI)!\n");
         System.out.println("(1) Neues Spiel starten");
         System.out.println("(2) Beenden\n");
         System.out.print("Deine Wahl: ");
