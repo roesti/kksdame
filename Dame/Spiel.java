@@ -13,9 +13,17 @@ public class Spiel
     private Spieler spieler2;
     private Spieler current_spieler;
 
-    public Spiel()
+    public Spiel(boolean GUI)
     {
-        this.ui = new KonsoleUI(this);
+        if (GUI)
+        {
+            this.ui = new GUI(this);
+        }
+        else
+        {
+            this.ui = new KonsoleUI(this);
+        }
+        
         this.spielbrett = new Spielbrett();
         this.spieler1 = new Spieler(this);
         this.spieler2 = new Spieler(this);
@@ -127,7 +135,15 @@ public class Spiel
     // instance variables - replace the example below with your own
     public static void main(String args[])
     {
-        Spiel spiel = new Spiel();
+        if (args.length == 0)
+        {
+            Spiel spiel = new Spiel(false);
+        }
+        else
+        {
+            Spiel spiel = new Spiel(true);
+        }
+        
     }
 
     public Spieler getSpieler1()
