@@ -244,11 +244,11 @@ public class GUI implements UI, MouseListener, ActionListener
                 panel.addMouseListener(this);
                 panel.add(background_panel);
 
-                checkerBoard.add(panel);
+                this.checkerBoard.add(panel);
             }
         }
 
-        mainWindow.getContentPane().add(checkerBoard);
+        this.mainWindow.getContentPane().add(checkerBoard);
 
         // Vertikale Spielfeldbeschriftungen setzen (1 bis 8)
         for (int i = 0; i < 8; i++)
@@ -263,7 +263,7 @@ public class GUI implements UI, MouseListener, ActionListener
             row_left_label.setSize(50, 40);
             row_left_label.setFont(new Font("Arial", Font.BOLD, 14));
             row_left_label.setHorizontalTextPosition(JLabel.LEFT);
-            mainWindow.getContentPane().add(row_left_label);
+            this.mainWindow.getContentPane().add(row_left_label);
 
             JLabel row_right_label = new JLabel(new Integer(i + 1).toString());
             row_right_label.setLayout(null);
@@ -271,7 +271,7 @@ public class GUI implements UI, MouseListener, ActionListener
             row_right_label.setSize(50, 40);
             row_right_label.setFont(new Font("Arial", Font.BOLD, 14));
             row_right_label.setHorizontalTextPosition(JLabel.LEFT);
-            mainWindow.getContentPane().add(row_right_label);
+            this.mainWindow.getContentPane().add(row_right_label);
 
         }
 
@@ -468,7 +468,7 @@ public class GUI implements UI, MouseListener, ActionListener
         this.exitButton.addActionListener(this);
         this.mainWindow.getContentPane().add(exitButton);
 
-        mainWindow.setVisible(true);
+        this.mainWindow.setVisible(true);
     }
 
     public int[] getSpielfeldPosition(ImagePanel panel)
