@@ -1,6 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.util.*;
 
 /**
  * GUI Klasse - Ausgabe des Damespiels mittels der Grafikbibliotheken von Java
@@ -9,7 +10,7 @@ import java.awt.event.*;
  * @version 0.1
  */
 
-public class GUI implements UI, MouseListener
+public class GUI implements UI, MouseListener, ActionListener
 {
     private Spiel spiel;
 
@@ -44,46 +45,59 @@ public class GUI implements UI, MouseListener
     private JButton newGameButton;
     private JButton exitButton;
 
+    private boolean steinAngeklickt;
+    private ImagePanel bewegtesPanel;
+    private boolean uiInitialized;
+    private boolean spielEnde;
+
     /**
      * Constructor for objects of class KonsoleUI
      */
     public GUI(Spiel spiel)
     {
         this.spiel = spiel;
+        this.steinAngeklickt = false;
+        this.bewegtesPanel = null;
+        this.uiInitialized = false;
+        this.spielEnde = false;
     }
 
     public void displayMainMenu()
     {
-        
+        this.steinAngeklickt = false;
+        this.bewegtesPanel = null;
+        this.spielEnde = false;
         this.spiel.startGame();
-        
     }
 
     public void displayStartGameMenu()
     {
         String spieler1_name = "";
         String spieler2_name = "";
-        
+
         while (spieler1_name.trim().equals(""))
         {
             spieler1_name = JOptionPane.showInputDialog(this.mainWindow, "Name des 1. Spielers:", "Namenseingabe", JOptionPane.PLAIN_MESSAGE);
         }
-        
+
         this.spiel.getSpieler1().setName(spieler1_name);
-        
+
         while (spieler2_name.trim().equals(""))
         {
             spieler2_name = JOptionPane.showInputDialog(this.mainWindow, "Name des 2. Spielers:", "Namenseingabe", JOptionPane.PLAIN_MESSAGE);
         }
-        
+
         this.spiel.getSpieler2().setName(spieler2_name);
     }
 
     public void displayMainGameMenu()
     {
-        this.drawSpiel();
-        
-        
+        if (!this.uiInitialized)
+        {
+            this.uiInitialized = true;
+            this.drawSpiel();
+        }
+
         this.setzeSteine();
     }
 
@@ -154,8 +168,30 @@ public class GUI implements UI, MouseListener
                     background_panel.setImage(tile_clear);
                 }
 
+                background_panel.validate();
+                background_panel.repaint();
+
             }
         }
+
+        String color_spieler_current = "schwarz";
+
+        if (this.spiel.getCurrentSpieler().getColor() == 'w')
+        {
+            color_spieler_current = "weiß";
+        }
+        
+        
+        if (!this.spielEnde)
+        {
+            this.zugStatusLabel.setText(this.spiel.getCurrentSpieler().getName() + " (" + color_spieler_current + ") ist am Zug!");
+        }
+        
+        this.spielstandSpieler1DamenValue.setText(new Integer(this.spiel.getSpieler1().countDamen()).toString());
+        this.spielstandSpieler1SteineValue.setText(new Integer(this.spiel.getSpieler1().countNormaleSteine()).toString());
+        this.spielstandSpieler2DamenValue.setText(new Integer(this.spiel.getSpieler2().countDamen()).toString());
+        this.spielstandSpieler2SteineValue.setText(new Integer(this.spiel.getSpieler2().countNormaleSteine()).toString());
+
     }
 
     public void drawSpiel()
@@ -304,21 +340,21 @@ public class GUI implements UI, MouseListener
             col_bottom_label.setHorizontalTextPosition(JLabel.LEFT);
             this.mainWindow.getContentPane().add(col_bottom_label);
         }
-        
+
         String color_spieler_current = "schwarz";
         String color_spieler_1 = "schwarz";
         String color_spieler_2 = "schwarz";
-        
+
         if (this.spiel.getCurrentSpieler().getColor() == 'w')
         {
             color_spieler_current = "weiß";
         }
-        
+
         if (this.spiel.getSpieler1().getColor() == 'w')
         {
             color_spieler_1 = "weiß";
         }
-        
+
         if (this.spiel.getSpieler2().getColor() == 'w')
         {
             color_spieler_2 = "weiß";
@@ -332,7 +368,7 @@ public class GUI implements UI, MouseListener
         this.zugStatusLabel.setForeground(Color.red);
         this.zugStatusLabel.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(zugStatusLabel);
-        
+
         this.spielstandLabel = new JLabel("Spielstand:");
         this.spielstandLabel.setLayout(null);
         this.spielstandLabel.setLocation(700, 110);
@@ -340,7 +376,7 @@ public class GUI implements UI, MouseListener
         this.spielstandLabel.setFont(new Font("Arial", Font.BOLD, 18));
         this.spielstandLabel.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandLabel);
-        
+
         this.spielstandSpieler1Label = new JLabel(this.spiel.getSpieler1().getName() + " (" + color_spieler_1 + ")");
         this.spielstandSpieler1Label.setLayout(null);
         this.spielstandSpieler1Label.setLocation(700, 160);
@@ -348,7 +384,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler1Label.setFont(new Font("Arial", Font.BOLD, 16));
         this.spielstandSpieler1Label.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler1Label);
-        
+
         this.spielstandSpieler1Damen = new JLabel("Damen:");
         this.spielstandSpieler1Damen.setLayout(null);
         this.spielstandSpieler1Damen.setLocation(700, 185);
@@ -356,7 +392,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler1Damen.setFont(new Font("Arial", Font.PLAIN, 16));
         this.spielstandSpieler1Damen.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler1Damen);
-        
+
         this.spielstandSpieler1DamenValue = new JLabel(new Integer(this.spiel.getSpieler1().countDamen()).toString());
         this.spielstandSpieler1DamenValue.setLayout(null);
         this.spielstandSpieler1DamenValue.setLocation(900, 185);
@@ -364,7 +400,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler1DamenValue.setFont(new Font("Arial", Font.PLAIN, 16));
         this.spielstandSpieler1DamenValue.setHorizontalTextPosition(JLabel.RIGHT);
         this.mainWindow.getContentPane().add(spielstandSpieler1DamenValue);
-        
+
         this.spielstandSpieler1Steine = new JLabel("Normale Steine:");
         this.spielstandSpieler1Steine.setLayout(null);
         this.spielstandSpieler1Steine.setLocation(700, 210);
@@ -372,7 +408,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler1Steine.setFont(new Font("Arial", Font.PLAIN, 16));
         this.spielstandSpieler1Steine.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler1Steine);
-        
+
         this.spielstandSpieler1SteineValue = new JLabel(new Integer(this.spiel.getSpieler1().countNormaleSteine()).toString());
         this.spielstandSpieler1SteineValue.setLayout(null);
         this.spielstandSpieler1SteineValue.setLocation(900, 210);
@@ -380,7 +416,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler1SteineValue.setFont(new Font("Arial", Font.PLAIN, 16));
         this.spielstandSpieler1SteineValue.setHorizontalTextPosition(JLabel.RIGHT);
         this.mainWindow.getContentPane().add(spielstandSpieler1SteineValue);
-        
+
         this.spielstandSpieler2Label = new JLabel(this.spiel.getSpieler2().getName() + " (" + color_spieler_2 + ")");
         this.spielstandSpieler2Label.setLayout(null);
         this.spielstandSpieler2Label.setLocation(700, 250);
@@ -388,7 +424,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler2Label.setFont(new Font("Arial", Font.BOLD, 16));
         this.spielstandSpieler2Label.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler2Label);
-        
+
         this.spielstandSpieler2Damen = new JLabel("Damen:");
         this.spielstandSpieler2Damen.setLayout(null);
         this.spielstandSpieler2Damen.setLocation(700, 275);
@@ -396,7 +432,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler2Damen.setFont(new Font("Arial", Font.PLAIN, 16));
         this.spielstandSpieler2Damen.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler2Damen);
-        
+
         this.spielstandSpieler2DamenValue = new JLabel(new Integer(this.spiel.getSpieler2().countDamen()).toString());
         this.spielstandSpieler2DamenValue.setLayout(null);
         this.spielstandSpieler2DamenValue.setLocation(900, 275);
@@ -404,7 +440,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler2DamenValue.setFont(new Font("Arial", Font.PLAIN, 16));
         this.spielstandSpieler2DamenValue.setHorizontalTextPosition(JLabel.RIGHT);
         this.mainWindow.getContentPane().add(spielstandSpieler2DamenValue);
-        
+
         this.spielstandSpieler2Steine = new JLabel("Normale Steine:");
         this.spielstandSpieler2Steine.setLayout(null);
         this.spielstandSpieler2Steine.setLocation(700, 300);
@@ -412,7 +448,7 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler2Steine.setFont(new Font("Arial", Font.PLAIN, 16));
         this.spielstandSpieler2Steine.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler2Steine);
-        
+
         this.spielstandSpieler2SteineValue = new JLabel(new Integer(this.spiel.getSpieler2().countNormaleSteine()).toString());
         this.spielstandSpieler2SteineValue.setLayout(null);
         this.spielstandSpieler2SteineValue.setLocation(900, 300);
@@ -420,51 +456,69 @@ public class GUI implements UI, MouseListener
         this.spielstandSpieler2SteineValue.setFont(new Font("Arial", Font.PLAIN, 16));
         this.spielstandSpieler2SteineValue.setHorizontalTextPosition(JLabel.RIGHT);
         this.mainWindow.getContentPane().add(spielstandSpieler2SteineValue);
-        
+
         this.newGameButton = new JButton("Neues Spiel");
         this.newGameButton.setLayout(null);
         this.newGameButton.setLocation(700, 553);
         this.newGameButton.setSize(150, 40);
         this.newGameButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.newGameButton.addActionListener(this);
         this.mainWindow.getContentPane().add(newGameButton);
-        
+
         this.exitButton = new JButton("Beenden");
         this.exitButton.setLayout(null);
         this.exitButton.setLocation(870, 553);
         this.exitButton.setSize(150, 40);
         this.exitButton.setFont(new Font("Arial", Font.PLAIN, 16));
-        this.exitButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent e)
-            {
-                System.exit(0);
-            }
-        });
+        this.exitButton.addActionListener(this);
         this.mainWindow.getContentPane().add(exitButton);
-        
 
         mainWindow.setVisible(true);
     }
 
+    public int[] getSpielfeldPosition(ImagePanel panel)
+    {
+        int[] position = new int[2];
+
+        for (int i = 0; i < 8; i++)
+        {
+            for (int k = 0; k < 8; k++)
+            {
+                int grid_index = (i * 8) + k;
+
+                if (this.checkerBoard.getComponent(grid_index) == panel)
+                {
+                    position[0] = 7 - i;
+                    position[1] = k;
+                }
+            }
+        }
+
+        return position;
+    }
+
+    public void spielEnde()
+    {   
+        String name_winner = this.spiel.getSpieler1().getName().toUpperCase();
+        String name_loser = this.spiel.getSpieler2().getName();
+        this.spielEnde = true;
+
+        if (this.spiel.getSpieler1().countSteineGesamt() == 0)
+        {
+            name_winner = this.spiel.getSpieler2().getName().toUpperCase();
+            name_loser = this.spiel.getSpieler1().getName();
+        }
+
+        this.zugStatusLabel.setText(name_winner + " gewinnt!");
+
+        JOptionPane.showMessageDialog(this.mainWindow, name_winner + " gewinnt!");
+
+    }
+
     // Implementieren der Methoden für den
     // MouseMotionListeners und den MouseListener
-    public void mouseDragged(MouseEvent e) {
 
-    }
-
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    public void mouseExited(MouseEvent e) {
-
-    }
-
-    public void mouseMoved(MouseEvent e) {}
-
-    public void mousePressed(MouseEvent e) {}
-
-    public void mouseClicked(MouseEvent e)
+    public void mouseEntered(MouseEvent e)
     {
         for (int i = 0; i < 8; i++)
         {
@@ -474,14 +528,302 @@ public class GUI implements UI, MouseListener
 
                 if (this.checkerBoard.getComponent(grid_index) == e.getComponent())
                 {
-                    JOptionPane.showMessageDialog(mainWindow, (7 - i) + "," + k);
+
+                    if (this.steinAngeklickt)
+                    {
+                        ImagePanel hoveredField = (ImagePanel) this.checkerBoard.getComponent(grid_index);
+                        ImagePanel backgroundField = (ImagePanel) hoveredField.getComponent(0);
+                        int arrayPos[] = this.getSpielfeldPosition(this.bewegtesPanel);
+                        int newPos[] = new int[2];
+                        newPos[0] = 7 - i;
+                        newPos[1] = k;
+
+                        Spielstein stein = this.spiel.getSpielbrett().getBrett()[arrayPos[0]][arrayPos[1]];
+
+                        if (backgroundField.getComponentCount() == 0)
+                        {
+                            backgroundField.removeAll();
+
+                            int offset_stein = 5;
+                            ArrayList<int[]> possibleMoves = stein.getPossibleMoves();
+                            boolean validMove = false;
+
+                            for (int[] pos : possibleMoves)
+                            {
+                                if ((pos[0] == newPos[0]) && (pos[1] == newPos[1]))
+                                {
+                                    validMove = true;
+                                }
+                            }
+
+                            if (validMove)
+                            {
+                                backgroundField.setImage(tile_green);
+                            }
+                            else
+                            {
+                                backgroundField.setImage(tile_red);
+                            }
+
+                            if (stein.getColor() == 'w')
+                            {
+                                if (stein.getIsDame() == true)
+                                {
+                                    ImagePanel steinImage = new ImagePanel(dame_weiss);
+                                    steinImage.setLocation(offset_stein, offset_stein);
+                                    backgroundField.add(steinImage);
+                                }
+                                else
+                                {
+                                    ImagePanel steinImage = new ImagePanel(stein_weiss);
+                                    steinImage.setLocation(offset_stein, offset_stein);
+                                    backgroundField.add(steinImage);
+                                }
+                            }
+                            else
+                            {
+                                if (stein.getIsDame() == true)
+                                {
+                                    ImagePanel steinImage = new ImagePanel(dame_schwarz);
+                                    steinImage.setLocation(offset_stein, offset_stein);
+                                    backgroundField.add(steinImage);
+                                }
+                                else
+                                {
+                                    ImagePanel steinImage = new ImagePanel(stein_schwarz);
+                                    steinImage.setLocation(offset_stein, offset_stein);
+                                    backgroundField.add(steinImage);
+                                }
+                            }
+
+                            backgroundField.validate();
+                            backgroundField.repaint();
+                        }
+
+                    }
+
+                }
+            }
+        }
+    }
+
+    public void mouseExited(MouseEvent e)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int k = 0; k < 8; k++)
+            {
+                int grid_index = (i * 8) + k;
+
+                if (this.checkerBoard.getComponent(grid_index) == e.getComponent())
+                {
+                    ImagePanel hoveredField = (ImagePanel) this.checkerBoard.getComponent(grid_index);
+                    ImagePanel backgroundField = (ImagePanel) hoveredField.getComponent(0);
+
+                    if (this.bewegtesPanel == hoveredField)
+                    {
+                        backgroundField.setImage(tile_blue);
+                    }
+                    else
+                    {
+                        backgroundField.setImage(tile_clear);
+                    }
+
+                    if (this.steinAngeklickt)
+                    {
+                        if (backgroundField.getComponentCount() > 0)
+                        {
+                            int arrayPos[] = this.getSpielfeldPosition(hoveredField);
+
+                            Spielstein stein = this.spiel.getSpielbrett().getBrett()[arrayPos[0]][arrayPos[1]];
+
+                            if (stein == null)
+                            {
+                                backgroundField.remove(0);
+                            }
+                        }
+
+                    }
+
+                    backgroundField.validate();
+                    backgroundField.repaint();
                 }
 
             }
         }
+    }
 
+    public void mouseClicked(MouseEvent e)
+    {
+        if (!this.spielEnde)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                for (int k = 0; k < 8; k++)
+                {
+                    int grid_index = (i * 8) + k;
+
+                    if (this.checkerBoard.getComponent(grid_index) == e.getComponent())
+                    {
+                        ImagePanel panelAngeklickt = (ImagePanel) this.checkerBoard.getComponent(grid_index);
+
+                        int arrayPos[] = this.getSpielfeldPosition(panelAngeklickt);
+                        Spielstein stein = this.spiel.getSpielbrett().getBrett()[arrayPos[0]][arrayPos[1]];
+
+                        // Angeklicktes Feld ist ein Stein auf dem Spielfeld..
+                        if (stein != null)
+                        {
+                            // Angeklickter Stein gehört zum aktuellen Spieler
+                            if (stein.getColor() == this.spiel.getCurrentSpieler().getColor())
+                            {
+                                // Momentan kein Stein ausgewählt..
+                                if (this.bewegtesPanel == null)
+                                {
+                                    this.bewegtesPanel = panelAngeklickt;
+                                    this.steinAngeklickt = true;
+                                    ImagePanel backgroundPanel = (ImagePanel) this.bewegtesPanel.getComponent(0);
+                                    backgroundPanel.setImage(tile_blue);
+                                    backgroundPanel.validate();
+                                    backgroundPanel.repaint();
+
+                                    this.spiel.resetSteinWahl();
+                                    stein.setAusgewaehlt(true);
+                                }
+                                else // Es ist bereits ein Stein ausgewählt
+                                {
+                                    ImagePanel backgroundPanel = (ImagePanel) this.bewegtesPanel.getComponent(0);
+                                    backgroundPanel.setImage(tile_clear);
+                                    backgroundPanel.validate();
+                                    backgroundPanel.repaint();
+
+                                    this.bewegtesPanel = panelAngeklickt;
+                                    this.steinAngeklickt = true;
+
+                                    backgroundPanel = (ImagePanel) this.bewegtesPanel.getComponent(0);
+                                    backgroundPanel.setImage(tile_blue);
+                                    backgroundPanel.validate();
+                                    backgroundPanel.repaint();
+
+                                    this.spiel.resetSteinWahl();
+                                    stein.setAusgewaehlt(true);
+                                }
+                            }
+                            else // Stein gehört nicht dem Spieler..
+                            {
+                                // Aktuell ist ein Stein ausgewählt
+                                if (this.bewegtesPanel != null)
+                                {
+                                    this.steinAngeklickt = false;
+                                    ImagePanel backgroundPanel = (ImagePanel) this.bewegtesPanel.getComponent(0);
+                                    backgroundPanel.setImage(tile_clear);
+                                    backgroundPanel.validate();
+                                    backgroundPanel.repaint();
+                                    this.bewegtesPanel = null;
+
+                                    this.spiel.resetSteinWahl();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // An der Position ist kein Stein, aber es wurde einer ausgewählt..
+                            if (this.steinAngeklickt == true)
+                            {
+                                int posSteinGewaehlt[] = this.getSpielfeldPosition(this.bewegtesPanel);
+
+                                Spielstein steinGewaehlt = this.spiel.getSpielbrett().getBrett()[posSteinGewaehlt[0]][posSteinGewaehlt[1]];
+
+                                ArrayList<int[]> possibleMoves = steinGewaehlt.getPossibleMoves();
+                                boolean validMove = false;
+
+                                for (int[] pos : possibleMoves)
+                                {
+                                    if ((pos[0] == arrayPos[0]) && (pos[1] == arrayPos[1]))
+                                    {
+                                        validMove = true;
+                                    }
+                                }
+
+                                // Gültiger Zug..
+                                if (validMove)
+                                {
+                                    boolean geschlagen = steinGewaehlt.moveTo(arrayPos[0], arrayPos[1]);
+
+                                    if (geschlagen)
+                                    {
+                                        ArrayList<int[]> possible_schlag_moves = steinGewaehlt.getPossibleSchlagMoves();
+                                        // Wenn geschlagen werden kann.
+                                        if (possible_schlag_moves.size() > 0)
+                                        {
+                                            this.bewegtesPanel = panelAngeklickt;
+                                            this.spiel.resetSteinWahl();
+                                            steinGewaehlt.setAusgewaehlt(true);
+                                        }
+                                        else
+                                        {
+                                            this.steinAngeklickt = false;
+                                            this.bewegtesPanel = null;
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        this.steinAngeklickt = false;
+                                        this.bewegtesPanel = null;
+                                    }
+
+                                    if (this.steinAngeklickt == false)
+                                    {
+                                        if ((this.spiel.getSpieler1().countSteineGesamt() > 0) && (this.spiel.getSpieler2().countSteineGesamt() > 0))
+                                        {
+                                            if (this.spiel.getCurrentSpieler() == this.spiel.getSpieler1())
+                                            {
+                                                this.spiel.setCurrentSpieler(this.spiel.getSpieler2());
+                                            }
+                                            else
+                                            {
+                                                this.spiel.setCurrentSpieler(this.spiel.getSpieler1());
+                                            }
+
+                                            this.spiel.resetSteinWahl();
+
+                                        }
+                                        else
+                                        {
+                                            // Ende
+                                            this.setzeSteine();
+                                            this.spielEnde();
+                                        }
+                                    }
+
+                                    this.setzeSteine();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void mouseReleased(MouseEvent e) {}
+
+    public void mouseMoved(MouseEvent e) {}
+
+    public void mousePressed(MouseEvent e) {}
+
+    public void mouseDragged(MouseEvent e) {}
+
+    public void actionPerformed (ActionEvent ae)
+    {
+        if(ae.getSource() == this.newGameButton)
+        {
+            this.displayMainMenu();
+        }
+        else if (ae.getSource() == this.exitButton)
+        {
+            System.exit(0);
+        }
+    }
 
 }
