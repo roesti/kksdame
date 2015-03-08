@@ -11,6 +11,5 @@ public interface UI
     public void displayMainMenu();
     public void displayStartGameMenu();
     public void displayMainGameMenu();
-    public void drawSpielfeld();
     public void drawSpiel();
 }

@@ -101,11 +101,6 @@ public class GUI implements UI, MouseListener, ActionListener
         this.setzeSteine();
     }
 
-    public void drawSpielfeld()
-    {
-
-    }
-
     public void setzeSteine()
     {
         int offset_stein = 5;
