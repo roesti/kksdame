@@ -56,6 +56,7 @@ public class NetzwerkLobby implements ActionListener
         try
         {
             this.networkClient = new DameClient(server_name, 41135, this);
+            this.networkClient.sendMessageToServer("SETUSERNAME|" + this.spielerName);
             this.erzeugeBrowser();
         }
         catch (UnknownHostException uhe)
@@ -118,6 +119,7 @@ public class NetzwerkLobby implements ActionListener
         this.mainWindow.getContentPane().add(this.chatTextLabel);
         this.mainWindow.getContentPane().add(this.playerListTitleLabel);
         this.mainWindow.getContentPane().add(this.chatSendButton);
+        this.mainWindow.getRootPane().setDefaultButton(this.chatSendButton);
         this.mainWindow.setVisible(true);
 
     }
@@ -171,7 +173,7 @@ public class NetzwerkLobby implements ActionListener
             if (!this.chatTextField.getText().trim().equals(""))
             {
 
-                this.networkClient.sendMessageToServer("CHAT|" + this.spielerName + "|" + this.chatTextField.getText().replaceAll("\\|", "PIPE_CHARACTER"));
+                this.networkClient.sendMessageToServer("CHAT|" + this.chatTextField.getText().replaceAll("\\|", "PIPE_CHARACTER"));
                 this.chatTextField.setText("");
             }
 

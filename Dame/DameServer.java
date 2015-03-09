@@ -2,6 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.*;
 
 public class DameServer implements Runnable
 {
@@ -10,6 +11,7 @@ public class DameServer implements Runnable
     private ServerSocket server = null;
     private Thread       thread = null;
     private int clientCount = 0;
+    private ScheduledExecutorService scheduledExecutor;
 
     public DameServer(int port)
     {
@@ -26,7 +28,7 @@ public class DameServer implements Runnable
             System.out.println("Portbindung fehlgeschlagen " + port + ": " + ioe.getMessage());
         }
     }
-    
+
     public synchronized ArrayList<DameServerThread> getClients()
     {
         return this.clients;
@@ -54,6 +56,41 @@ public class DameServer implements Runnable
         {
             thread = new Thread(this); 
             thread.start();
+            this.scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+
+            Runnable periodicTask = new DameServerIdleHelper(this);
+                
+            this.scheduledExecutor.scheduleAtFixedRate(periodicTask, 0, 10, TimeUnit.SECONDS);
+        }
+    }
+    
+    public synchronized void checkIdleClients()
+    {
+        
+    }
+    
+    // Broadcast an alle Clients mit allen offenen Verbindungen
+    public synchronized void propagateUsers()
+    {
+        boolean first = true;
+        String propagateUserString = "PROPAGATEUSERS|";
+        
+        for (DameServerThread client: clients)
+        {
+            if (first)
+            {
+                first = false;
+                propagateUserString += client.getID() + ";;;" + client.getUsername() + ";;;" + client.getColorString();
+            }
+            else
+            {
+                propagateUserString += "%%%" + client.getID() + ";;;" + client.getUsername() + ";;;" + client.getColorString();
+            }
+        }
+        
+        for (DameServerThread client: clients)
+        {
+            client.send(propagateUserString);
         }
     }
 
@@ -75,25 +112,29 @@ public class DameServer implements Runnable
                 return client;
             }
         }
-        
+
         return null;
     }
-    
+
     // Abhandlung der Server-Kommandos, die an den Client gesendet werden.
     public synchronized void handle(int ID, String input)
     {
+        
+        this.findClient(ID).updateIdleTime();
+        
         String input_splitted[] = input.split("\\|");
         String action = input_splitted[0];
-        String name = input_splitted[1];
-        String value = input_splitted[2];
-        
+
         if (action.equals("CHAT"))
         {
+            
+            String name = this.findClient(ID).getUsername();
+            String value = input_splitted[1];
             SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
             Calendar calendar = Calendar.getInstance();
             String time = dateFormat.format(calendar.getTime());
             String color = this.findClient(ID).getColorString();
-            
+
             for (DameServerThread client : clients)
             {
                 client.send("CHAT|" + time + "|" + color + "|" + name + "|" + value);
@@ -101,15 +142,13 @@ public class DameServer implements Runnable
         }
         else if (input.equals(".bye"))
         {
-            findClient(ID).send(".bye");
-            remove(ID);
+            this.findClient(ID).send(".bye");
+            this.remove(ID);
         }
-        else if (action.equals("MOVE"))
+        else if (action.equals("SETUSERNAME"))
         {
-            /*for (int i = 0; i < clientCount; i++)
-            {
-                clients[i].send(ID + ": " + input);
-            }*/    
+            String username = input_splitted[1];
+            this.findClient(ID).setUsername(username);
         }
     }
 
@@ -122,9 +161,7 @@ public class DameServer implements Runnable
             DameServerThread toTerminate = clientToRemove;
             System.out.println("Entferne Client Thread " + ID);
 
-           
             clientCount--;
-
             try
             {
                 toTerminate.close();
