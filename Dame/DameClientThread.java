@@ -3,9 +3,9 @@ import java.io.*;
 
 public class DameClientThread extends Thread
 {
-    private Socket           socket   = null;
-    private DameClient       client   = null;
-    private DataInputStream  streamIn = null;
+    private Socket socket = null;
+    private DameClient client = null;
+    private DataInputStream streamIn = null;
 
     public DameClientThread(DameClient client, Socket socket)
     {
@@ -19,7 +19,7 @@ public class DameClientThread extends Thread
     {
         try
         {
-            streamIn  = new DataInputStream(socket.getInputStream());
+            this.streamIn  = new DataInputStream(socket.getInputStream());
         }
         catch(IOException ioe)
         {
@@ -29,7 +29,8 @@ public class DameClientThread extends Thread
     }
 
     public void close()
-    {  try
+    { 
+        try
         {
             if (streamIn != null)
             {

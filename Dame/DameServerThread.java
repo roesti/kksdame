@@ -6,27 +6,27 @@ import java.util.*;
 public class DameServerThread extends Thread
 {
     private volatile boolean done = false;
-    
-    private DameServer       server    = null;
-    private Socket           socket    = null;
-    private int              ID        = -1;
-    private DataInputStream  streamIn  =  null;
+
+    private DameServer server = null;
+    private Socket socket = null;
+    private int ID = -1;
+    private DataInputStream streamIn  =  null;
     private DataOutputStream streamOut = null;
-    private String           color_string = null;
-    private long             lastIdleTimestamp = 0;
-    private String           userName;
-    
+    private String color_string = null;
+    private long lastIdleTimestamp = 0;
+    private String userName;
+
     public void shutdown()
     {
         this.done = true;
     }
 
-    public DameServerThread(DameServer _server, Socket _socket)
+    public DameServerThread(DameServer server, Socket socket)
     {
         super();
-        server = _server;
-        socket = _socket;
-        ID     = socket.getPort();
+        this.server = server;
+        this.socket = socket;
+        this.ID = socket.getPort();
 
         boolean color_found = true;
 
@@ -80,24 +80,26 @@ public class DameServerThread extends Thread
     public void send(String msg)
     {   try
         {  
-            streamOut.writeUTF(msg);
-            streamOut.flush();
+            this.streamOut.writeUTF(msg);
+            this.streamOut.flush();
         }
         catch(IOException ioe)
         {  
             System.out.println(ID + " ERROR sending: " + ioe.getMessage());
-            server.remove(ID);
+            this.server.remove(ID);
             this.shutdown();
         }
     }
 
     public int getID()
-    {  return ID;
+    { 
+        return ID;
     }
 
     public void run()
-    {  System.out.println("Server Thread " + ID + " running.");
-        
+    { 
+        System.out.println("Server Thread " + ID + " running.");
+
         while (!this.done)
         {  
             try
@@ -130,7 +132,7 @@ public class DameServerThread extends Thread
         {
             streamIn.close();
         }
-        
+
         if (streamOut != null)
         {
             streamOut.close();

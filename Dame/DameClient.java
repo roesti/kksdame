@@ -15,12 +15,9 @@ public class DameClient
 
     public DameClient(String serverName, int serverPort, NetzwerkLobby lobby) throws UnknownHostException, IOException
     {
-        //System.out.println("Establishing connection. Please wait ...");
-
         try
         {
             socket = new Socket(serverName, serverPort);
-            //System.out.println("Connected: " + socket);
             this.clientInput = new DataInputStream(System.in);
             this.serverStream = new DataOutputStream(socket.getOutputStream());
             this.lobby = lobby;
