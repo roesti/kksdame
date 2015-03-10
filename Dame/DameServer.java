@@ -6,12 +6,19 @@ import java.util.concurrent.*;
 
 public class DameServer implements Runnable
 {
+    private volatile boolean done = false;
+    
     private ArrayList<DameServerThread> clients = new ArrayList<DameServerThread>();
     //private DameServerThread clients[] = new DameServerThread[50];
     private ServerSocket server = null;
     private Thread       thread = null;
     private int clientCount = 0;
     private ScheduledExecutorService scheduledExecutor;
+    
+    public void shutdown()
+    {
+        this.done = true;
+    }
 
     public DameServer(int port)
     {
@@ -36,7 +43,7 @@ public class DameServer implements Runnable
 
     public void run()
     {
-        while (thread != null)
+        while (thread != null && !this.done)
         {
             try
             {
@@ -45,7 +52,8 @@ public class DameServer implements Runnable
             }
             catch(IOException ioe)
             {
-                System.out.println("Client konnte nicht akzeptiert werden: " + ioe); stop();
+                System.out.println("Client konnte nicht akzeptiert werden: " + ioe);
+                this.shutdown();
             }
         }
     }
@@ -60,7 +68,7 @@ public class DameServer implements Runnable
 
             Runnable periodicTask = new DameServerIdleHelper(this);
                 
-            this.scheduledExecutor.scheduleAtFixedRate(periodicTask, 0, 10, TimeUnit.SECONDS);
+            this.scheduledExecutor.scheduleAtFixedRate(periodicTask, 0, 1, TimeUnit.SECONDS);
         }
     }
     
@@ -91,15 +99,6 @@ public class DameServer implements Runnable
         for (DameServerThread client: clients)
         {
             client.send(propagateUserString);
-        }
-    }
-
-    public void stop()
-    {
-        if (thread != null)
-        {
-            thread.stop(); 
-            thread = null;
         }
     }
 
@@ -171,7 +170,7 @@ public class DameServer implements Runnable
                 System.out.println("Fehler beim Schließen des Threads: " + ioe);
             }
 
-            toTerminate.stop();
+            toTerminate.shutdown();
         }
     }
 
@@ -187,7 +186,6 @@ public class DameServer implements Runnable
             {
                 client.open(); 
                 client.start();  
-                clientCount++;
             }
             catch(IOException ioe)
             {
@@ -204,6 +202,7 @@ public class DameServer implements Runnable
     public static void main(String args[])
     {
         DameServer server = null;
+        
         if (args.length != 1)
         {
             System.out.println("Benutzung: java DameServer port");

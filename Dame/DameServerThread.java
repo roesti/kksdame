@@ -5,6 +5,8 @@ import java.util.*;
 
 public class DameServerThread extends Thread
 {
+    private volatile boolean done = false;
+    
     private DameServer       server    = null;
     private Socket           socket    = null;
     private int              ID        = -1;
@@ -13,6 +15,11 @@ public class DameServerThread extends Thread
     private String           color_string = null;
     private long             lastIdleTimestamp = 0;
     private String           userName;
+    
+    public void shutdown()
+    {
+        this.done = true;
+    }
 
     public DameServerThread(DameServer _server, Socket _socket)
     {
@@ -80,7 +87,7 @@ public class DameServerThread extends Thread
         {  
             System.out.println(ID + " ERROR sending: " + ioe.getMessage());
             server.remove(ID);
-            stop();
+            this.shutdown();
         }
     }
 
@@ -90,7 +97,8 @@ public class DameServerThread extends Thread
 
     public void run()
     {  System.out.println("Server Thread " + ID + " running.");
-        while (true)
+        
+        while (!this.done)
         {  
             try
             { 
@@ -100,7 +108,7 @@ public class DameServerThread extends Thread
             {  
                 System.out.println(ID + " ERROR reading: " + ioe.getMessage());
                 server.remove(ID);
-                stop();
+                this.shutdown();
             }
         }
     }
@@ -122,6 +130,7 @@ public class DameServerThread extends Thread
         {
             streamIn.close();
         }
+        
         if (streamOut != null)
         {
             streamOut.close();

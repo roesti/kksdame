@@ -23,12 +23,15 @@ public class NetzwerkLobby implements ActionListener
     private JLabel chatTitleLabel;
     private JLabel playerListTitleLabel;
     private JLabel chatTextLabel;
-    private JList playerList;
+    private JList<String> playerList;
     private JTextField chatTextField;
     private JButton chatSendButton;
-    private String spielerName = null;
-
+    
+    private DefaultListModel<String> clientListModel;
+    
+    private String spielerName;
     private DameClient networkClient;
+    
 
     /**
      * Constructor for objects of class NetworkBrowser
@@ -88,12 +91,14 @@ public class NetzwerkLobby implements ActionListener
         this.chatTitleLabel = new JLabel("Chat:");
         this.chatTitleLabel.setSize(50, 20);
         this.chatTitleLabel.setLocation(10, 20);
-
-        String spieler_test[] = new String[1];
-        spieler_test[0] = "Test";
-        this.playerList = new JList(spieler_test);
+        
+        this.clientListModel = new DefaultListModel<String>();
+        
+        this.playerList = new JList<String>();
+        this.playerList.setModel(this.clientListModel);
         this.playerList.setLocation(520, 40);
         this.playerList.setSize(150, 410);
+        this.playerList.setCellRenderer(new ClientCellRenderer());
 
         this.playerListTitleLabel = new JLabel("Spieler:");
         this.playerListTitleLabel.setSize(50, 20);
@@ -164,6 +169,18 @@ public class NetzwerkLobby implements ActionListener
         }
         
         //this.chatTextArea.append(message + "\n");
+    }
+    
+    public synchronized void updateClientList(String client_list_string)
+    {
+        this.clientListModel.removeAllElements();
+        
+        String clients[] = client_list_string.split("%%%");
+        
+        for (int i = 0; i < clients.length; i++)
+        {
+            this.clientListModel.addElement(clients[i]);
+        }
     }
 
     public void actionPerformed (ActionEvent ae)

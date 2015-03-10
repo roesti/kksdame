@@ -66,43 +66,20 @@ public class DameClient
             
             this.receiveChatMessage(time, color, name, message);
         }
+        else if (action.equals("PROPAGATEUSERS"))
+        {
+            String client_string = msg.split("\\|")[1];
+            this.receiveClientList(client_string);
+        }
+    }
+    
+    public synchronized void receiveClientList(String client_list)
+    {
+        this.lobby.updateClientList(client_list);
     }
     
     public synchronized void receiveChatMessage(String time, String color, String name, String message)
     {
         this.lobby.writeToChat(time, color, name, message.replaceAll("PIPE_CHARACTER", "\\|"));
     }
-
-  
-
-    /*public void stop()
-    {
-        if (thread != null)
-        {  
-            thread.stop();  
-            thread = null;
-        }
-        try
-        {
-            if (clientInput != null)
-            {
-                clientInput.close();
-            }
-            if (serverStream != null)
-            {
-                serverStream.close();
-            }
-            if (socket != null) 
-            {
-                socket.close();
-            }
-        }
-        catch(IOException ioe)
-        {
-            System.out.println("Error closing ...");
-        }
-
-        client.close();  
-        client.stop();
-    }*/
 }
