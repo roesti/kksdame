@@ -26,12 +26,13 @@ public class NetzwerkLobby implements ActionListener
     private JList<String> playerList;
     private JTextField chatTextField;
     private JButton chatSendButton;
-    
+
+    private boolean disconnected;
+
     private DefaultListModel<String> clientListModel;
-    
+
     private String spielerName;
     private DameClient networkClient;
-    
 
     /**
      * Constructor for objects of class NetworkBrowser
@@ -40,6 +41,8 @@ public class NetzwerkLobby implements ActionListener
     {
         // initialise instance variables
         //this.gui = gui;
+
+        this.disconnected = false;
 
         String spieler_name = "";
         String server_name = "";
@@ -71,7 +74,16 @@ public class NetzwerkLobby implements ActionListener
             JOptionPane.showMessageDialog(null, "Unbekannter Fehler beim Verbinden aufgetreten", "Fehler", JOptionPane.ERROR_MESSAGE);
         }
 
+    }
 
+    public void setDisconnected(boolean disconnected)
+    {
+        this.disconnected = disconnected;
+    }
+
+    public JFrame getMainWindow()
+    {
+        return this.mainWindow;
     }
 
     public void erzeugeBrowser()
@@ -91,9 +103,9 @@ public class NetzwerkLobby implements ActionListener
         this.chatTitleLabel = new JLabel("Chat:");
         this.chatTitleLabel.setSize(50, 20);
         this.chatTitleLabel.setLocation(10, 20);
-        
+
         this.clientListModel = new DefaultListModel<String>();
-        
+
         this.playerList = new JList<String>();
         this.playerList.setModel(this.clientListModel);
         this.playerList.setLocation(520, 40);
@@ -125,6 +137,27 @@ public class NetzwerkLobby implements ActionListener
         this.mainWindow.getContentPane().add(this.playerListTitleLabel);
         this.mainWindow.getContentPane().add(this.chatSendButton);
         this.mainWindow.getRootPane().setDefaultButton(this.chatSendButton);
+
+        this.mainWindow.addWindowListener(new java.awt.event.WindowAdapter()
+            {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent windowEvent)
+                {
+                    if (!disconnected)
+                    {
+                        if (JOptionPane.showConfirmDialog(mainWindow, "Verbindung zum Server trennen?", "Beenden?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION)
+                        {
+                            networkClient.sendMessageToServer("DISCONNECT");
+                        }
+                    }
+                    else
+                    {
+                        JOptionPane.showMessageDialog(mainWindow, "Verbindung zum Server aufgrund Inaktivität getrennt.", "Verbindungsabbruch", JOptionPane.INFORMATION_MESSAGE);
+                    }
+
+                }
+            });
+
         this.mainWindow.setVisible(true);
 
     }
@@ -134,7 +167,7 @@ public class NetzwerkLobby implements ActionListener
         StyledDocument doc = this.chatScrollPane.getStyledDocument();
 
         Style style = this.chatScrollPane.addStyle("Chatstil", null);
-        
+
         StyleConstants.setForeground(style, Color.red);
 
         try
@@ -143,43 +176,74 @@ public class NetzwerkLobby implements ActionListener
         }
         catch (BadLocationException e)
         {
-            
+
         }
 
         StyleConstants.setForeground(style, Color.decode(color));
-        
+
         try
         {
             doc.insertString(doc.getLength(), "[" + name + "]: ", style);
         }
         catch (BadLocationException e)
         {
-            
+
         }
-        
+
         StyleConstants.setForeground(style, Color.black);
-        
+
         try
         {
             doc.insertString(doc.getLength(), message + "\n", style);
         }
         catch (BadLocationException e)
         {
-            
+
         }
-        
+
         //this.chatTextArea.append(message + "\n");
     }
-    
+
     public synchronized void updateClientList(String client_list_string)
     {
-        this.clientListModel.removeAllElements();
-        
+        //this.clientListModel.removeAllElements();
+
         String clients[] = client_list_string.split("%%%");
-        
+
+        for (int i = 0; i < this.clientListModel.getSize(); i++)
+        {
+            boolean found = false;
+
+            for (int k = 0; k < clients.length; k++)
+            {
+                if (clients[k].equals(this.clientListModel.getElementAt(i)))
+                {
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                clientListModel.removeElementAt(i);
+            }
+        }
+
         for (int i = 0; i < clients.length; i++)
         {
-            this.clientListModel.addElement(clients[i]);
+            boolean found = false;
+
+            for (int k = 0; k < this.clientListModel.getSize(); k++)
+            {
+                if (clients[i].equals(this.clientListModel.getElementAt(k)))
+                {
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                this.clientListModel.addElement(clients[i]);
+            }
         }
     }
 

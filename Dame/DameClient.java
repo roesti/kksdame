@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.awt.event.*;
 
 // Wrapper Klasse - kommuniziert mit dem ClientThread, der im Hintergrund Daten vom Server empfängt
 // bzw. diese an den Server sendet
@@ -67,6 +68,11 @@ public class DameClient
         {
             String client_string = msg.split("\\|")[1];
             this.receiveClientList(client_string);
+        }
+        else if (action.equals("DISCONNECT"))
+        {
+            this.lobby.setDisconnected(true);
+            this.lobby.getMainWindow().dispatchEvent(new WindowEvent(this.lobby.getMainWindow(), WindowEvent.WINDOW_CLOSING));
         }
     }
     

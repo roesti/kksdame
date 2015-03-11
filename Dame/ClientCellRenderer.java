@@ -13,6 +13,7 @@ public class ClientCellRenderer extends JLabel implements ListCellRenderer<Objec
         String object_string = value.toString();
         String object_splitted[] = object_string.split(";;;");
         Color color = Color.decode(object_splitted[2]);
+        String isPlaying = object_splitted[3];
         String username = object_splitted[1];
         
         

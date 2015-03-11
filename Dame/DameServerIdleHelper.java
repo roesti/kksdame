@@ -1,3 +1,5 @@
+import java.io.*;
+
 class DameServerIdleHelper implements Runnable
 {
 
@@ -11,6 +13,7 @@ class DameServerIdleHelper implements Runnable
     public void run()
     {
         this.server.checkIdleClients();
-        this.server.propagateUsers();
+        this.server.propagateUsers(); 
+        System.out.println("läuft noch!");
     }
 }

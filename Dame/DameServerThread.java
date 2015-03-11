@@ -2,11 +2,10 @@ import java.net.*;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.locks.*;
 
 public class DameServerThread extends Thread
 {
-    private volatile boolean done = false;
-
     private DameServer server = null;
     private Socket socket = null;
     private int ID = -1;
@@ -15,18 +14,23 @@ public class DameServerThread extends Thread
     private String color_string = null;
     private long lastIdleTimestamp = 0;
     private String userName;
+    private boolean isPlaying;
+    private volatile boolean done;
 
     public void shutdown()
     {
-        this.done = true;
+        done = true;
     }
 
     public DameServerThread(DameServer server, Socket socket)
     {
         super();
+        this.done = false;
         this.server = server;
         this.socket = socket;
-        this.ID = socket.getPort();
+        this.ID = this.socket.getPort();
+
+        this.isPlaying = false;
 
         boolean color_found = true;
 
@@ -50,6 +54,16 @@ public class DameServerThread extends Thread
                 this.color_string = color;
             }
         }
+    }
+
+    public void setIsPlaying(boolean isPlaying)
+    {
+        this.isPlaying = isPlaying;
+    }
+
+    public boolean getIsPlaying()
+    {
+        return this.isPlaying;
     }
 
     public void setUsername(String username)
@@ -78,64 +92,66 @@ public class DameServerThread extends Thread
     }
 
     public void send(String msg)
-    {   try
-        {  
-            this.streamOut.writeUTF(msg);
-            this.streamOut.flush();
+    {
+        if (this.done == false)
+        {
+            try
+            {  
+                this.streamOut.writeUTF(msg);
+                this.streamOut.flush();
+            }
+            catch(IOException ioe)
+            {  
+                System.out.println(ID + " ERROR sending: " + ioe.getMessage());
+                this.server.remove(ID);
+                this.shutdown();
+            }
         }
-        catch(IOException ioe)
-        {  
-            System.out.println(ID + " ERROR sending: " + ioe.getMessage());
-            this.server.remove(ID);
-            this.shutdown();
-        }
+
     }
 
     public int getID()
     { 
-        return ID;
+        return this.ID;
     }
 
     public void run()
     { 
-        System.out.println("Server Thread " + ID + " running.");
+        System.out.println("Server Thread für Client " + ID + " läuft.");
 
         while (!this.done)
-        {  
+        {
             try
             { 
-                server.handle(ID, streamIn.readUTF());
+                this.server.handle(this.ID, this.streamIn.readUTF());
             }
             catch(IOException ioe)
             {  
-                System.out.println(ID + " ERROR reading: " + ioe.getMessage());
-                server.remove(ID);
+                System.out.println(ID + " ERROR reading: " + ioe.getMessage() + socket + streamIn + done);
+                this.server.remove(ID);
                 this.shutdown();
             }
+
         }
     }
 
     public void open() throws IOException
-    {  
-        streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-        streamOut = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+    {
+
+        this.done = false;
+
+        this.streamIn = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
+        this.streamOut = new DataOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+
     }
 
     public void close() throws IOException
-    {  
-        if (socket != null)
+    {
+        this.stop();
+        
+        if (this.socket != null)
         {
-            socket.close();
-        }
-
-        if (streamIn != null)
-        {
-            streamIn.close();
-        }
-
-        if (streamOut != null)
-        {
-            streamOut.close();
+            this.socket.close();
         }
     }
 }

@@ -3,18 +3,19 @@ import java.io.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 
 public class DameServer implements Runnable
 {
     private volatile boolean done = false;
-    
+
     private ArrayList<DameServerThread> clients = new ArrayList<DameServerThread>();
     //private DameServerThread clients[] = new DameServerThread[50];
     private ServerSocket server = null;
     private Thread       thread = null;
     private int clientCount = 0;
     private ScheduledExecutorService scheduledExecutor;
-    
+
     public void shutdown()
     {
         this.done = true;
@@ -36,13 +37,20 @@ public class DameServer implements Runnable
         }
     }
 
-    public synchronized ArrayList<DameServerThread> getClients()
+    public ArrayList<DameServerThread> getClients()
     {
         return this.clients;
     }
 
     public void run()
     {
+        this.scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+
+        Runnable periodicTask = new DameServerIdleHelper(this);
+
+        // HintergrundTask starten, der in einem Zeitintervall sowohl die aktiven User an alle Clients sendet, als auch prüft, welche Clients zu lange geidlet haben (über 10 Minuten)
+        this.scheduledExecutor.scheduleAtFixedRate(periodicTask, 0, 1, TimeUnit.SECONDS);
+
         while (thread != null && !this.done)
         {
             try
@@ -64,39 +72,63 @@ public class DameServer implements Runnable
         {
             thread = new Thread(this); 
             thread.start();
-            this.scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-
-            Runnable periodicTask = new DameServerIdleHelper(this);
-                
-            this.scheduledExecutor.scheduleAtFixedRate(periodicTask, 0, 1, TimeUnit.SECONDS);
         }
     }
-    
-    public synchronized void checkIdleClients()
+
+    // Prüfung, welche Clients länger als 10 Minuten idlen -> Disconnect
+    public void checkIdleClients()
     {
-        
+        for (DameServerThread client : this.clients)
+        {
+            
+            if (this.clients.size() < 1)
+            {
+                System.out.println("passiert das?");
+            }
+            
+            if (client != null)
+            {
+                long time_passed = (Calendar.getInstance().getTime().getTime() - client.getIdleTime()) / 1000;
+
+                if (time_passed > 5)
+                {
+                    this.disconnectClient(client);
+                }
+            }
+
+        }
     }
-    
+
+    public void disconnectClient(DameServerThread client)
+    {
+        if (client != null)
+        {
+            client.send("DISCONNECT");
+            this.remove(client.getID());
+        }
+
+    }
+
     // Broadcast an alle Clients mit allen offenen Verbindungen
-    public synchronized void propagateUsers()
+    public void propagateUsers()
     {
         boolean first = true;
         String propagateUserString = "PROPAGATEUSERS|";
-        
-        for (DameServerThread client: clients)
+
+        for (DameServerThread client: this.clients)
         {
             if (first)
             {
                 first = false;
-                propagateUserString += client.getID() + ";;;" + client.getUsername() + ";;;" + client.getColorString();
+                propagateUserString += client.getID() + ";;;" + client.getUsername() + ";;;" + client.getColorString() + ";;;" + client.getIsPlaying();
             }
             else
             {
-                propagateUserString += "%%%" + client.getID() + ";;;" + client.getUsername() + ";;;" + client.getColorString();
+                propagateUserString += "%%%" + client.getID() + ";;;" + client.getUsername() + ";;;" + client.getColorString() + ";;;" + client.getIsPlaying();
             }
         }
-        
-        for (DameServerThread client: clients)
+
+        for (DameServerThread client: this.clients)
         {
             client.send(propagateUserString);
         }
@@ -104,7 +136,7 @@ public class DameServer implements Runnable
 
     private DameServerThread findClient(int ID)
     {
-        for (DameServerThread client : clients)
+        for (DameServerThread client : this.clients)
         {
             if (client.getID() == ID)
             {
@@ -118,15 +150,17 @@ public class DameServer implements Runnable
     // Abhandlung der Server-Kommandos, die an den Client gesendet werden.
     public synchronized void handle(int ID, String input)
     {
-        
+
         this.findClient(ID).updateIdleTime();
-        
+
         String input_splitted[] = input.split("\\|");
         String action = input_splitted[0];
 
+        System.out.println(input);
+
         if (action.equals("CHAT"))
         {
-            
+
             String name = this.findClient(ID).getUsername();
             String value = input_splitted[1];
             SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -134,15 +168,14 @@ public class DameServer implements Runnable
             String time = dateFormat.format(calendar.getTime());
             String color = this.findClient(ID).getColorString();
 
-            for (DameServerThread client : clients)
+            for (DameServerThread client : this.clients)
             {
                 client.send("CHAT|" + time + "|" + color + "|" + name + "|" + value);
             }
         }
-        else if (input.equals(".bye"))
+        else if (input.equals("DISCONNECT"))
         {
-            this.findClient(ID).send(".bye");
-            this.remove(ID);
+            this.disconnectClient(this.findClient(ID));
         }
         else if (action.equals("SETUSERNAME"))
         {
@@ -151,16 +184,19 @@ public class DameServer implements Runnable
         }
     }
 
-    public synchronized void remove(int ID)
+    public void remove(int ID)
     {
         DameServerThread clientToRemove = findClient(ID);
 
         if (clientToRemove != null)
         {
             DameServerThread toTerminate = clientToRemove;
+            this.clients.remove(toTerminate);
+            
             System.out.println("Entferne Client Thread " + ID);
 
             clientCount--;
+
             try
             {
                 toTerminate.close();
@@ -169,8 +205,14 @@ public class DameServer implements Runnable
             {
                 System.out.println("Fehler beim Schließen des Threads: " + ioe);
             }
+            
+            
 
             toTerminate.shutdown();
+
+            
+
+            toTerminate = null;
         }
     }
 
@@ -189,7 +231,7 @@ public class DameServer implements Runnable
             }
             catch(IOException ioe)
             {
-                System.out.println("Fehler beim Öffnen des Threads: " + ioe);
+                System.out.println("Fehler beim Erstellen des Threads: " + ioe);
             }
         }
         else
@@ -202,7 +244,7 @@ public class DameServer implements Runnable
     public static void main(String args[])
     {
         DameServer server = null;
-        
+
         if (args.length != 1)
         {
             System.out.println("Benutzung: java DameServer port");
