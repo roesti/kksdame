@@ -8,12 +8,12 @@ import java.util.concurrent.locks.*;
 public class DameServer implements Runnable
 {
     private volatile boolean done = false;
+    public static final int maxClients = 50;
 
     private ArrayList<DameServerThread> clients = new ArrayList<DameServerThread>();
     //private DameServerThread clients[] = new DameServerThread[50];
     private ServerSocket server = null;
     private Thread       thread = null;
-    private int clientCount = 0;
     private ScheduledExecutorService scheduledExecutor;
 
     public void shutdown()
@@ -194,6 +194,41 @@ public class DameServer implements Runnable
             String username = input_splitted[1];
             this.findClient(ID).setUsername(username);
         }
+        else if (action.equals("GET_ID_SELF"))
+        {
+            this.findClient(ID).send("SEND_ID_SELF|" + ID);
+            System.out.println("SEND TO " + ID + ": " + "SEND_ID_SELF|" + ID);
+        }
+        else if (action.equals("CHALLENGE_REQUEST"))
+        {
+            int id_opponent = Integer.parseInt(input_splitted[1]);
+            this.findClient(ID).setIsPlaying(true);
+            this.findClient(id_opponent).setIsPlaying(true);
+            this.findClient(id_opponent).send("CHALLENGE_RECEIVED|" + ID);
+            System.out.println("SEND TO " + id_opponent + ": " + "CHALLENGE_RECEIVED|" + ID);
+        }
+        else if (action.equals("CHALLENGE_REQUEST_CANCEL"))
+        {
+            int id_opponent = Integer.parseInt(input_splitted[1]);
+            this.findClient(ID).setIsPlaying(false);
+            this.findClient(id_opponent).setIsPlaying(false);       
+            this.findClient(id_opponent).send("CHALLENGE_REQUEST_CANCELLED|" + ID);
+            System.out.println("SEND TO " + id_opponent + ": " + "CHALLENGE_REQUEST_CANCELLED|" + ID);
+        }
+        else if (action.equals("CHALLENGE_REQUEST_DECLINE"))
+        {
+            int id_opponent = Integer.parseInt(input_splitted[1]);
+            this.findClient(ID).setIsPlaying(false);
+            this.findClient(id_opponent).setIsPlaying(false);
+            this.findClient(id_opponent).send("CHALLENGE_REQUEST_DECLINED|" + ID);
+            System.out.println("SEND TO " + id_opponent + ": " + "CHALLENGE_REQUEST_DECLINED|" + ID);
+        }
+        else if (action.equals("CHALLENGE_REQUEST_ACCEPT"))
+        {
+            int id_opponent = Integer.parseInt(input_splitted[1]);
+            this.findClient(id_opponent).send("CHALLENGE_REQUEST_ACCEPTED|" + ID);
+            System.out.println("SEND TO " + id_opponent + ": " + "CHALLENGE_REQUEST_ACCEPTED|" + ID);
+        }
     }
 
     public synchronized void remove(int ID)
@@ -208,8 +243,6 @@ public class DameServer implements Runnable
                 this.clients.remove(toTerminate);
 
                 System.out.println("Entferne Client Thread " + ID);
-
-                clientCount--;
 
                 try
                 {
@@ -231,7 +264,7 @@ public class DameServer implements Runnable
 
     private void addThread(Socket socket)
     {
-        if (clientCount < 50)
+        if (this.clients.size() < DameServer.maxClients)
         {
             System.out.println("Client akzeptiert: " + socket);
             DameServerThread client = new DameServerThread(this, socket);

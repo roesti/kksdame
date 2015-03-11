@@ -13,6 +13,7 @@ public class DameClient
     private DataOutputStream serverStream    = null;
     private DameClientThread client          = null;
     private NetzwerkLobby lobby              = null;
+    private int ID                           = 0;
 
     public DameClient(String serverName, int serverPort, NetzwerkLobby lobby) throws UnknownHostException, IOException
     {
@@ -48,7 +49,10 @@ public class DameClient
         }
     }
 
-    
+    public int getID()
+    {
+        return this.ID;
+    }
 
     // Wird ausgeführt, wenn vom Server bzw. vom ClientThread etwas zurückkommt..
     public synchronized void handle(String msg)
@@ -73,6 +77,35 @@ public class DameClient
         {
             this.lobby.setDisconnected(true);
             this.lobby.getMainWindow().dispatchEvent(new WindowEvent(this.lobby.getMainWindow(), WindowEvent.WINDOW_CLOSING));
+        }
+        else if (action.equals("SEND_ID_SELF"))
+        {
+            String id = msg.split("\\|")[1];
+            this.ID = Integer.parseInt(id);
+        }
+        else if (action.equals("CHALLENGE_RECEIVED"))
+        {
+            String id = msg.split("\\|")[1];
+            int id_opponent = Integer.parseInt(id);
+            this.lobby.challengeRequestedBy(id_opponent);
+        }
+        else if (action.equals("CHALLENGE_REQUEST_CANCELLED"))
+        {
+            String id = msg.split("\\|")[1];
+            int id_opponent = Integer.parseInt(id);
+            this.lobby.challengeRequestCanceledBy(id_opponent);
+        }
+        else if (action.equals("CHALLENGE_REQUEST_DECLINED"))
+        {
+            String id = msg.split("\\|")[1];
+            int id_opponent = Integer.parseInt(id);
+            this.lobby.challengeRequestDeclinedBy(id_opponent);
+        }
+        else if (action.equals("CHALLENGE_REQUEST_ACCEPTED"))
+        {
+            String id = msg.split("\\|")[1];
+            int id_opponent = Integer.parseInt(id);
+            this.lobby.challengeRequestAcceptedBy(id_opponent);
         }
     }
     

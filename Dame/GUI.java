@@ -26,9 +26,11 @@ public class GUI implements UI, MouseListener, ActionListener
     private Image tile_blue = new ImageIcon("images/tile_chosen.png").getImage();
     private Image tile_red = new ImageIcon("images/tile_red.png").getImage();
     private Image tile_green = new ImageIcon("images/tile_green.png").getImage();
+    private Image start_splash = new ImageIcon("images/start_splash.png").getImage();
 
     private JFrame mainWindow;
     private JPanel checkerBoard;
+    private ImagePanel startSplash;
 
     private JLabel zugStatusLabel;
     private JLabel spielstandLabel;
@@ -42,8 +44,17 @@ public class GUI implements UI, MouseListener, ActionListener
     private JLabel spielstandSpieler2DamenValue;
     private JLabel spielstandSpieler2Steine;
     private JLabel spielstandSpieler2SteineValue;
+    private ArrayList<JLabel> checkerBoardRowColumnLabels;
     private JButton newGameButton;
     private JButton exitButton;
+    private JMenuBar menuBar;
+    private JMenu menuSpiel;
+    private JMenu menuHilfe;
+    private JMenuItem menuItemNeuesSpiel;
+    private JMenuItem menuItemNetworkSpiel;
+    private JMenuItem menuItemExit;
+    private JMenuItem menuItemAbout;
+    private NetzwerkLobby netzwerkLobby;
 
     private boolean steinAngeklickt;
     private ImagePanel bewegtesPanel;
@@ -67,35 +78,102 @@ public class GUI implements UI, MouseListener, ActionListener
         this.steinAngeklickt = false;
         this.bewegtesPanel = null;
         this.spielEnde = false;
-        this.spiel.startGame();
+        this.drawSpiel();
+        //this.spiel.startGame();
     }
 
     public void displayStartGameMenu()
     {
+
         String spieler1_name = "";
         String spieler2_name = "";
+        boolean no_valid_player1_name = true;
+        boolean no_valid_player2_name = true;
 
-        while (spieler1_name.trim().equals(""))
+        while (no_valid_player1_name)
         {
             spieler1_name = JOptionPane.showInputDialog(this.mainWindow, "Name des 1. Spielers:", "Namenseingabe", JOptionPane.PLAIN_MESSAGE);
+            
+            if (spieler1_name != null)
+            {
+                if (!spieler1_name.trim().equals(""))
+                {
+                    no_valid_player1_name = false;
+                }
+            }
         }
 
         this.spiel.getSpieler1().setName(spieler1_name);
 
-        while (spieler2_name.trim().equals(""))
+        while (no_valid_player2_name)
         {
             spieler2_name = JOptionPane.showInputDialog(this.mainWindow, "Name des 2. Spielers:", "Namenseingabe", JOptionPane.PLAIN_MESSAGE);
+            
+            if (spieler2_name != null)
+            {
+                if (!spieler2_name.trim().equals(""))
+                {
+                    no_valid_player2_name = false;
+                }
+            }
         }
 
         this.spiel.getSpieler2().setName(spieler2_name);
+
+        this.checkerBoard.setVisible(true);
+        this.zugStatusLabel.setVisible(true);
+        this.spielstandLabel.setVisible(true);
+        this.spielstandSpieler1Label.setVisible(true);
+        this.spielstandSpieler1Damen.setVisible(true);
+        this.spielstandSpieler1DamenValue.setVisible(true);
+        this.spielstandSpieler1Steine.setVisible(true);
+        this.spielstandSpieler1SteineValue.setVisible(true);
+        this.spielstandSpieler2Label.setVisible(true);
+        this.spielstandSpieler2Damen.setVisible(true);
+        this.spielstandSpieler2DamenValue.setVisible(true);
+        this.spielstandSpieler2Steine.setVisible(true);
+        this.spielstandSpieler2SteineValue.setVisible(true);
+        this.newGameButton.setVisible(true);
+        this.exitButton.setVisible(true);
+        this.startSplash.setVisible(false);
+
+        for (JLabel label : this.checkerBoardRowColumnLabels)
+        {
+            label.setVisible(true);
+        }
+
+        
+
     }
 
     public void displayMainGameMenu()
     {
+        String color_spieler_current = "schwarz";
+        String color_spieler_1 = "schwarz";
+        String color_spieler_2 = "schwarz";
+
+        if (this.spiel.getCurrentSpieler().getColor() == 'w')
+        {
+            color_spieler_current = "weiß";
+        }
+
+        if (this.spiel.getSpieler1().getColor() == 'w')
+        {
+            color_spieler_1 = "weiß";
+        }
+
+        if (this.spiel.getSpieler2().getColor() == 'w')
+        {
+            color_spieler_2 = "weiß";
+        }
+
+        this.spielstandSpieler1Label.setText(this.spiel.getSpieler1().getName() + " (" + color_spieler_1 + ")");
+        this.spielstandSpieler2Label.setText(this.spiel.getSpieler2().getName() + " (" + color_spieler_2 + ")");
+        
         if (!this.uiInitialized)
         {
             this.uiInitialized = true;
-            this.drawSpiel();
+            //this.drawSpiel();
         }
 
         this.setzeSteine();
@@ -175,13 +253,12 @@ public class GUI implements UI, MouseListener, ActionListener
         {
             color_spieler_current = "weiß";
         }
-        
-        
+
         if (!this.spielEnde)
         {
             this.zugStatusLabel.setText(this.spiel.getCurrentSpieler().getName() + " (" + color_spieler_current + ") ist am Zug!");
         }
-        
+
         this.spielstandSpieler1DamenValue.setText(new Integer(this.spiel.getSpieler1().countDamen()).toString());
         this.spielstandSpieler1SteineValue.setText(new Integer(this.spiel.getSpieler1().countNormaleSteine()).toString());
         this.spielstandSpieler2DamenValue.setText(new Integer(this.spiel.getSpieler2().countDamen()).toString());
@@ -195,7 +272,14 @@ public class GUI implements UI, MouseListener, ActionListener
         int spalten = this.spiel.getSpielbrett().getBrett()[0].length;
 
         this.mainWindow = new JFrame();
-        this.mainWindow.setSize(1075, 680);
+        this.mainWindow.setSize(1075, 700);
+        
+        
+        
+        ArrayList<Image> icons = new ArrayList<Image>();
+        icons.add(new ImageIcon("images/icon_16.png").getImage());
+        icons.add(new ImageIcon("images/icon_32.png").getImage());
+        this.mainWindow.setIconImages(icons);
 
         this.mainWindow.setContentPane(new ImagePanel(this.game_background));
         this.mainWindow.getContentPane().setLayout(null);
@@ -207,7 +291,10 @@ public class GUI implements UI, MouseListener, ActionListener
         this.checkerBoard.setSize(68 * spalten, 68 * zeilen);
         this.checkerBoard.setLocation(50, 50);
         this.checkerBoard.setLayout(new GridLayout(zeilen, spalten));
+
         Color temp;
+
+        this.checkerBoardRowColumnLabels = new ArrayList<JLabel>();
 
         for (int i = 0; i < zeilen; i++)
         {
@@ -263,6 +350,7 @@ public class GUI implements UI, MouseListener, ActionListener
             row_left_label.setSize(50, 40);
             row_left_label.setFont(new Font("Arial", Font.BOLD, 14));
             row_left_label.setHorizontalTextPosition(JLabel.LEFT);
+            this.checkerBoardRowColumnLabels.add(row_left_label);
             this.mainWindow.getContentPane().add(row_left_label);
 
             JLabel row_right_label = new JLabel(new Integer(i + 1).toString());
@@ -271,6 +359,7 @@ public class GUI implements UI, MouseListener, ActionListener
             row_right_label.setSize(50, 40);
             row_right_label.setFont(new Font("Arial", Font.BOLD, 14));
             row_right_label.setHorizontalTextPosition(JLabel.LEFT);
+            this.checkerBoardRowColumnLabels.add(row_right_label);
             this.mainWindow.getContentPane().add(row_right_label);
 
         }
@@ -325,6 +414,7 @@ public class GUI implements UI, MouseListener, ActionListener
             col_top_label.setSize(50, 40);
             col_top_label.setFont(new Font("Arial", Font.BOLD, 14));
             col_top_label.setHorizontalTextPosition(JLabel.LEFT);
+            this.checkerBoardRowColumnLabels.add(col_top_label);
             this.mainWindow.getContentPane().add(col_top_label);
 
             JLabel col_bottom_label = new JLabel(letter);
@@ -333,29 +423,11 @@ public class GUI implements UI, MouseListener, ActionListener
             col_bottom_label.setSize(50, 40);
             col_bottom_label.setFont(new Font("Arial", Font.BOLD, 14));
             col_bottom_label.setHorizontalTextPosition(JLabel.LEFT);
+            this.checkerBoardRowColumnLabels.add(col_bottom_label);
             this.mainWindow.getContentPane().add(col_bottom_label);
         }
 
-        String color_spieler_current = "schwarz";
-        String color_spieler_1 = "schwarz";
-        String color_spieler_2 = "schwarz";
-
-        if (this.spiel.getCurrentSpieler().getColor() == 'w')
-        {
-            color_spieler_current = "weiß";
-        }
-
-        if (this.spiel.getSpieler1().getColor() == 'w')
-        {
-            color_spieler_1 = "weiß";
-        }
-
-        if (this.spiel.getSpieler2().getColor() == 'w')
-        {
-            color_spieler_2 = "weiß";
-        }
-
-        this.zugStatusLabel = new JLabel(this.spiel.getCurrentSpieler().getName() + " (" + color_spieler_current + ") ist am Zug!");
+        this.zugStatusLabel = new JLabel();
         this.zugStatusLabel.setLayout(null);
         this.zugStatusLabel.setLocation(700, 40);
         this.zugStatusLabel.setSize(300, 30);
@@ -372,7 +444,7 @@ public class GUI implements UI, MouseListener, ActionListener
         this.spielstandLabel.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandLabel);
 
-        this.spielstandSpieler1Label = new JLabel(this.spiel.getSpieler1().getName() + " (" + color_spieler_1 + ")");
+        this.spielstandSpieler1Label = new JLabel();
         this.spielstandSpieler1Label.setLayout(null);
         this.spielstandSpieler1Label.setLocation(700, 160);
         this.spielstandSpieler1Label.setSize(300, 30);
@@ -388,7 +460,7 @@ public class GUI implements UI, MouseListener, ActionListener
         this.spielstandSpieler1Damen.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler1Damen);
 
-        this.spielstandSpieler1DamenValue = new JLabel(new Integer(this.spiel.getSpieler1().countDamen()).toString());
+        this.spielstandSpieler1DamenValue = new JLabel();
         this.spielstandSpieler1DamenValue.setLayout(null);
         this.spielstandSpieler1DamenValue.setLocation(900, 185);
         this.spielstandSpieler1DamenValue.setSize(300, 30);
@@ -404,7 +476,7 @@ public class GUI implements UI, MouseListener, ActionListener
         this.spielstandSpieler1Steine.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler1Steine);
 
-        this.spielstandSpieler1SteineValue = new JLabel(new Integer(this.spiel.getSpieler1().countNormaleSteine()).toString());
+        this.spielstandSpieler1SteineValue = new JLabel();
         this.spielstandSpieler1SteineValue.setLayout(null);
         this.spielstandSpieler1SteineValue.setLocation(900, 210);
         this.spielstandSpieler1SteineValue.setSize(300, 30);
@@ -412,7 +484,7 @@ public class GUI implements UI, MouseListener, ActionListener
         this.spielstandSpieler1SteineValue.setHorizontalTextPosition(JLabel.RIGHT);
         this.mainWindow.getContentPane().add(spielstandSpieler1SteineValue);
 
-        this.spielstandSpieler2Label = new JLabel(this.spiel.getSpieler2().getName() + " (" + color_spieler_2 + ")");
+        this.spielstandSpieler2Label = new JLabel();
         this.spielstandSpieler2Label.setLayout(null);
         this.spielstandSpieler2Label.setLocation(700, 250);
         this.spielstandSpieler2Label.setSize(300, 30);
@@ -428,7 +500,7 @@ public class GUI implements UI, MouseListener, ActionListener
         this.spielstandSpieler2Damen.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler2Damen);
 
-        this.spielstandSpieler2DamenValue = new JLabel(new Integer(this.spiel.getSpieler2().countDamen()).toString());
+        this.spielstandSpieler2DamenValue = new JLabel();
         this.spielstandSpieler2DamenValue.setLayout(null);
         this.spielstandSpieler2DamenValue.setLocation(900, 275);
         this.spielstandSpieler2DamenValue.setSize(300, 30);
@@ -444,7 +516,7 @@ public class GUI implements UI, MouseListener, ActionListener
         this.spielstandSpieler2Steine.setHorizontalTextPosition(JLabel.LEFT);
         this.mainWindow.getContentPane().add(spielstandSpieler2Steine);
 
-        this.spielstandSpieler2SteineValue = new JLabel(new Integer(this.spiel.getSpieler2().countNormaleSteine()).toString());
+        this.spielstandSpieler2SteineValue = new JLabel();
         this.spielstandSpieler2SteineValue.setLayout(null);
         this.spielstandSpieler2SteineValue.setLocation(900, 300);
         this.spielstandSpieler2SteineValue.setSize(300, 30);
@@ -467,6 +539,63 @@ public class GUI implements UI, MouseListener, ActionListener
         this.exitButton.setFont(new Font("Arial", Font.PLAIN, 16));
         this.exitButton.addActionListener(this);
         this.mainWindow.getContentPane().add(exitButton);
+        
+        this.startSplash = new ImagePanel(this.start_splash);
+        this.startSplash.setLocation(60, 150);
+        this.mainWindow.getContentPane().add(this.startSplash);
+
+        this.menuBar = new JMenuBar();
+        this.menuSpiel = new JMenu("Spiel");
+        this.menuSpiel.setMnemonic('S');
+        this.menuHilfe = new JMenu("Hilfe");
+        this.menuHilfe.setMnemonic('H');
+
+        this.menuItemNeuesSpiel = new JMenuItem("Neues Spiel");
+        this.menuItemNeuesSpiel.setMnemonic('N');
+        this.menuItemNeuesSpiel.addActionListener(this);
+        this.menuItemNetworkSpiel = new JMenuItem("Netzwerkspiel");
+        this.menuItemNetworkSpiel.setMnemonic('E');
+        this.menuItemNetworkSpiel.addActionListener(this);
+        this.menuItemExit = new JMenuItem("Beenden");
+        this.menuItemExit.setMnemonic('B');
+        this.menuItemExit.addActionListener(this);
+        this.menuItemAbout = new JMenuItem("Über");
+        this.menuItemAbout.setMnemonic('Ü');
+        this.menuItemAbout.addActionListener(this);
+
+        this.menuBar.add(this.menuSpiel);
+        this.menuBar.add(this.menuHilfe);
+
+        this.menuSpiel.add(this.menuItemNeuesSpiel);
+        this.menuSpiel.add(this.menuItemNetworkSpiel);
+        this.menuSpiel.addSeparator();
+        this.menuSpiel.add(this.menuItemExit);
+
+        this.menuHilfe.add(this.menuItemAbout);
+
+        this.checkerBoard.setVisible(false);
+        this.zugStatusLabel.setVisible(false);
+        this.spielstandLabel.setVisible(false);
+        this.spielstandSpieler1Label.setVisible(false);
+        this.spielstandSpieler1Damen.setVisible(false);
+        this.spielstandSpieler1DamenValue.setVisible(false);
+        this.spielstandSpieler1Steine.setVisible(false);
+        this.spielstandSpieler1SteineValue.setVisible(false);
+        this.spielstandSpieler2Label.setVisible(false);
+        this.spielstandSpieler2Damen.setVisible(false);
+        this.spielstandSpieler2DamenValue.setVisible(false);
+        this.spielstandSpieler2Steine.setVisible(false);
+        this.spielstandSpieler2SteineValue.setVisible(false);
+        this.newGameButton.setVisible(false);
+        this.exitButton.setVisible(false);
+        this.startSplash.setVisible(true);
+
+        for (JLabel label : this.checkerBoardRowColumnLabels)
+        {
+            label.setVisible(false);
+        }
+
+        this.mainWindow.setJMenuBar(this.menuBar);
 
         this.mainWindow.setVisible(true);
     }
@@ -508,6 +637,11 @@ public class GUI implements UI, MouseListener, ActionListener
 
         JOptionPane.showMessageDialog(this.mainWindow, name_winner + " gewinnt!");
 
+    }
+    
+    public JFrame getMainWindow()
+    {
+        return this.mainWindow;
     }
 
     // Implementieren der Methoden für den
@@ -648,7 +782,7 @@ public class GUI implements UI, MouseListener, ActionListener
         }
     }
 
-    public void mouseClicked(MouseEvent e)
+    public void mousePressed(MouseEvent e)
     {
         if (!this.spielEnde)
         {
@@ -805,7 +939,7 @@ public class GUI implements UI, MouseListener, ActionListener
 
     public void mouseMoved(MouseEvent e) {}
 
-    public void mousePressed(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {}
 
     public void mouseDragged(MouseEvent e) {}
 
@@ -813,11 +947,29 @@ public class GUI implements UI, MouseListener, ActionListener
     {
         if(ae.getSource() == this.newGameButton)
         {
-            this.displayMainMenu();
+            this.steinAngeklickt = false;
+            this.bewegtesPanel = null;
+            this.spielEnde = false;
+            this.spiel.startGame();
         }
         else if (ae.getSource() == this.exitButton)
         {
             System.exit(0);
+        }
+        else if (ae.getSource() == this.menuItemNeuesSpiel)
+        {
+            this.steinAngeklickt = false;
+            this.bewegtesPanel = null;
+            this.spielEnde = false;
+            this.spiel.startGame();
+        }
+        else if (ae.getSource() == this.menuItemExit)
+        {
+            System.exit(0);
+        }
+        else if (ae.getSource() == this.menuItemNetworkSpiel)
+        {
+            this.netzwerkLobby = new NetzwerkLobby(this);
         }
     }
 

@@ -13,13 +13,34 @@ public class ClientCellRenderer extends JLabel implements ListCellRenderer<Objec
         String object_string = value.toString();
         String object_splitted[] = object_string.split(";;;");
         Color color = Color.decode(object_splitted[2]);
-        String isPlaying = object_splitted[3];
+        boolean isPlaying = Boolean.parseBoolean(object_splitted[3]);
         String username = object_splitted[1];
         
         
-        this.setText(username);
-        this.setForeground(color);
-        this.setBackground(Color.white);
+        if (!isSelected)
+        {
+            this.setForeground(color);
+            this.setBackground(Color.white);
+        }
+        else
+        {
+            this.setForeground(Color.white);
+            this.setBackground(Color.blue);
+        }
+        
+        if (!isPlaying)
+        {
+            this.setText(username);
+            Font newFont = new Font(this.getFont().getName(), Font.BOLD, this.getFont().getSize());
+            this.setFont(newFont);
+        }
+        else
+        {
+            this.setText(username + " (spielt...)");
+            Font newFont = new Font(this.getFont().getName(), Font.ITALIC, this.getFont().getSize());
+            this.setFont(newFont);
+        }
+        
 
         return this;
     }
