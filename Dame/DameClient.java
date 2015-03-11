@@ -55,17 +55,17 @@ public class DameClient
     }
 
     // Wird ausgeführt, wenn vom Server bzw. vom ClientThread etwas zurückkommt..
-    public synchronized void handle(String msg)
+    public void handle(String msg)
     {
         String action = msg.split("\\|")[0];
-        
+
         if (action.equals("CHAT"))
         {
             String time = msg.split("\\|")[1];
             String color = msg.split("\\|")[2];
             String name = msg.split("\\|")[3];
             String message = msg.split("\\|")[4];
-            
+
             this.receiveChatMessage(time, color, name, message);
         }
         else if (action.equals("PROPAGATEUSERS"))
@@ -93,6 +93,8 @@ public class DameClient
         {
             String id = msg.split("\\|")[1];
             int id_opponent = Integer.parseInt(id);
+            //this.lobby.setOpponentId(id_opponent);
+            
             this.lobby.challengeRequestCanceledBy(id_opponent);
         }
         else if (action.equals("CHALLENGE_REQUEST_DECLINED"))
@@ -108,12 +110,12 @@ public class DameClient
             this.lobby.challengeRequestAcceptedBy(id_opponent);
         }
     }
-    
+
     public synchronized void receiveClientList(String client_list)
     {
         this.lobby.updateClientList(client_list);
     }
-    
+
     public synchronized void receiveChatMessage(String time, String color, String name, String message)
     {
         this.lobby.writeToChat(time, color, name, message.replaceAll("PIPE_CHARACTER", "\\|"));

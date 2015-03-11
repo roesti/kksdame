@@ -28,6 +28,9 @@ public class NetzwerkLobby implements ActionListener, MouseListener
     private JButton chatSendButton;
     private JPopupMenu playerContextMenu;
     private JMenuItem menuItemChallengePlayer;
+    
+    private JOptionPane acceptChallengePane;
+    private JDialog acceptChallengeDialog;
 
     private boolean disconnected;
 
@@ -35,6 +38,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
     private String spielerName;
     private DameClient networkClient;
+    private int opponentId;
 
     /**
      * Constructor for objects of class NetworkBrowser
@@ -95,6 +99,16 @@ public class NetzwerkLobby implements ActionListener, MouseListener
             JOptionPane.showMessageDialog(null, "Unbekannter Fehler beim Verbinden aufgetreten", "Fehler", JOptionPane.ERROR_MESSAGE);
         }
 
+    }
+    
+    public void setOpponentId(int opponentId)
+    {
+        this.opponentId = opponentId;
+    }
+    
+    public int getOpponentId()
+    {
+        return this.opponentId;
     }
 
     public void setDisconnected(boolean disconnected)
@@ -277,10 +291,10 @@ public class NetzwerkLobby implements ActionListener, MouseListener
             }
         }
     }
-    
+
     public void moveToBackgroundAndStartGame()
     {
-        
+        JOptionPane.showMessageDialog(this.mainWindow, "GEHT LOS!", "Herausforderung abgelehnt", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void challengeRequestCanceledBy(int ID)
@@ -291,41 +305,25 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         {
             String player_string = this.clientListModel.getElementAt(i);
             int id_player = Integer.parseInt(player_string.split(";;;")[0]);
-            
+
             if (id_player == ID)
             {
                 player = player_string.split(";;;")[1];
             }
-            
+
         }
-        
+
         // Den offenen Dialog finden ...
         
-        Window[] windows = Window.getWindows();
+        Window win = SwingUtilities.getWindowAncestor(this.acceptChallengePane);
+        win.dispose();
+        
 
-        JDialog opened_request_window = null;
-
-        for (Window window : windows)
-        {
-            if (window instanceof JDialog)
-            {
-                JDialog dialog = (JDialog) window;
-                if (dialog.getContentPane().getComponent(0) instanceof JOptionPane)
-                {
-                    opened_request_window = dialog;
-
-                }
-            }
-        }
-
-        if (opened_request_window != null)
-        {
-            opened_request_window.dispose();
-            JOptionPane.showMessageDialog(this.mainWindow, player + " hat seine Herausforderung zurückgezogen", "Herausforderung zurückgezogen", JOptionPane.INFORMATION_MESSAGE);
-        }
+        //this.acceptChallengeDialog.dispatchEvent(new WindowEvent(this.acceptChallengeDialog, WindowEvent.WINDOW_CLOSING));
+        JOptionPane.showMessageDialog(this.mainWindow, player + " hat seine Herausforderung zurückgezogen", "Herausforderung zurückgezogen", JOptionPane.INFORMATION_MESSAGE);
 
     }
-    
+
     public void challengeRequestDeclinedBy(int ID)
     {
         String player = null;
@@ -334,16 +332,16 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         {
             String player_string = this.clientListModel.getElementAt(i);
             int id_player = Integer.parseInt(player_string.split(";;;")[0]);
-            
+
             if (id_player == ID)
             {
                 player = player_string.split(";;;")[1];
             }
-            
+
         }
-        
+
         // Den offenen Dialog finden ...
-        
+
         Window[] windows = Window.getWindows();
 
         JDialog opened_request_window = null;
@@ -368,25 +366,25 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         }
 
     }
-    
+
     public void challengeRequestAcceptedBy(int ID)
     {
         String player = null;
 
-     for (int i = 0; i < this.clientListModel.getSize(); i++)
+        for (int i = 0; i < this.clientListModel.getSize(); i++)
         {
             String player_string = this.clientListModel.getElementAt(i);
             int id_player = Integer.parseInt(player_string.split(";;;")[0]);
-            
+
             if (id_player == ID)
             {
                 player = player_string.split(";;;")[1];
             }
-            
+
         }
-        
+
         // Den offenen Dialog finden ...
-        
+
         Window[] windows = Window.getWindows();
 
         JDialog opened_request_window = null;
@@ -407,7 +405,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         if (opened_request_window != null)
         {
             opened_request_window.dispose();
-            
+
             this.moveToBackgroundAndStartGame();
         }
 
@@ -421,29 +419,46 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         {
             String player_string = this.clientListModel.getElementAt(i);
             int id_player = Integer.parseInt(player_string.split(";;;")[0]);
-            
+
             if (id_player == ID)
             {
                 player = player_string.split(";;;")[1];
             }
-            
+
         }
         
-        int antwort = JOptionPane.showConfirmDialog(this.mainWindow, player + " hat Dich herausgefordert! Annehmen?", "Herausforderung", JOptionPane.YES_NO_OPTION);
+        this.acceptChallengePane = new JOptionPane(player + " hat Dich herausgefordert! Annehmen?");
+        Object[] options = {"Ja", "Nein"};
+        this.acceptChallengePane.setOptions(options);
+        this.acceptChallengeDialog = this.acceptChallengePane.createDialog(this.mainWindow, "Herausforderung");
         
-        if (antwort == JOptionPane.YES_OPTION)
+        this.acceptChallengeDialog.show();
+        
+        Object obj = this.acceptChallengePane.getValue(); 
+        int result = -1;
+        
+        for (int k = 0; k < options.length; k++)
         {
-           this.networkClient.sendMessageToServer("CHALLENGE_REQUEST_ACCEPT|" + ID);
-           this.moveToBackgroundAndStartGame();
+            if (options[k].equals(obj))
+            {
+                result = k;
+            }
+        }
+        
+        if (result == 0)
+        {
+            this.networkClient.sendMessageToServer("CHALLENGE_REQUEST_ACCEPT|" + ID);
+            this.moveToBackgroundAndStartGame();
         }
         else
         {
-           this.networkClient.sendMessageToServer("CHALLENGE_REQUEST_DECLINE|" + ID);
+            this.networkClient.sendMessageToServer("CHALLENGE_REQUEST_DECLINE|" + ID);
         }
+
+        
     }
 
-    public void actionPerformed (A
-           System.exit(0);ctionEvent ae)
+    public void actionPerformed (ActionEvent ae)
     {
         if(ae.getSource() == this.chatSendButton)
         {
