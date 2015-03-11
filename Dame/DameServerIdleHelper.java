@@ -14,6 +14,5 @@ class DameServerIdleHelper implements Runnable
     {
         this.server.checkIdleClients();
         this.server.propagateUsers(); 
-        System.out.println("läuft noch!");
     }
 }

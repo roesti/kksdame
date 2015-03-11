@@ -50,12 +50,13 @@ public class DameServer implements Runnable
 
         // HintergrundTask starten, der in einem Zeitintervall sowohl die aktiven User an alle Clients sendet, als auch prüft, welche Clients zu lange geidlet haben (über 10 Minuten)
         this.scheduledExecutor.scheduleAtFixedRate(periodicTask, 0, 1, TimeUnit.SECONDS);
+        
+        System.out.println("Warten auf Clients ...");
 
         while (thread != null && !this.done)
         {
             try
             {
-                System.out.println("Warten auf Clients ..."); 
                 this.addThread(this.server.accept());
             }
             catch(IOException ioe)
@@ -76,34 +77,44 @@ public class DameServer implements Runnable
     }
 
     // Prüfung, welche Clients länger als 10 Minuten idlen -> Disconnect
-    public void checkIdleClients()
+    public synchronized void checkIdleClients()
     {
+        ArrayList<DameServerThread> removeClients = new ArrayList<DameServerThread>();
+
         for (DameServerThread client : this.clients)
         {
-            
+
             if (this.clients.size() < 1)
             {
                 System.out.println("passiert das?");
             }
-            
+
             if (client != null)
             {
                 long time_passed = (Calendar.getInstance().getTime().getTime() - client.getIdleTime()) / 1000;
 
-                if (time_passed > 5)
+                if (time_passed > 600)
                 {
-                    this.disconnectClient(client);
+                    removeClients.add(client);
                 }
             }
-
         }
-    }
 
-    public void disconnectClient(DameServerThread client)
+        for (DameServerThread client : removeClients)
+        {
+            this.disconnectClient(client, true);
+        }
+
+    }
+    public synchronized void disconnectClient(DameServerThread client, boolean send_back_to_client)
     {
         if (client != null)
         {
-            client.send("DISCONNECT");
+            if (send_back_to_client)
+            {
+                client.send("DISCONNECT");
+            }
+
             this.remove(client.getID());
         }
 
@@ -156,7 +167,7 @@ public class DameServer implements Runnable
         String input_splitted[] = input.split("\\|");
         String action = input_splitted[0];
 
-        System.out.println(input);
+        System.out.println("RECV FROM " + ID + ":" + input);
 
         if (action.equals("CHAT"))
         {
@@ -167,7 +178,8 @@ public class DameServer implements Runnable
             Calendar calendar = Calendar.getInstance();
             String time = dateFormat.format(calendar.getTime());
             String color = this.findClient(ID).getColorString();
-
+            
+            System.out.println("BROADCAST SEND: " + "CHAT|" + time + "|" + color + "|" + name + "|" + value);
             for (DameServerThread client : this.clients)
             {
                 client.send("CHAT|" + time + "|" + color + "|" + name + "|" + value);
@@ -175,7 +187,7 @@ public class DameServer implements Runnable
         }
         else if (input.equals("DISCONNECT"))
         {
-            this.disconnectClient(this.findClient(ID));
+            this.disconnectClient(this.findClient(ID), false);
         }
         else if (action.equals("SETUSERNAME"))
         {
@@ -184,36 +196,37 @@ public class DameServer implements Runnable
         }
     }
 
-    public void remove(int ID)
+    public synchronized void remove(int ID)
     {
-        DameServerThread clientToRemove = findClient(ID);
-
-        if (clientToRemove != null)
+        try
         {
-            DameServerThread toTerminate = clientToRemove;
-            this.clients.remove(toTerminate);
-            
-            System.out.println("Entferne Client Thread " + ID);
+            DameServerThread clientToRemove = findClient(ID);
 
-            clientCount--;
-
-            try
+            if (clientToRemove != null)
             {
-                toTerminate.close();
+                DameServerThread toTerminate = clientToRemove;
+                this.clients.remove(toTerminate);
+
+                System.out.println("Entferne Client Thread " + ID);
+
+                clientCount--;
+
+                try
+                {
+                    toTerminate.close();
+                }
+                catch(IOException ioe)
+                {
+                    System.out.println("Fehler beim Schließen des Threads: " + ioe);
+                }
+
             }
-            catch(IOException ioe)
-            {
-                System.out.println("Fehler beim Schließen des Threads: " + ioe);
-            }
-            
-            
-
-            toTerminate.shutdown();
-
-            
-
-            toTerminate = null;
         }
+        catch(Exception ioe)
+        {
+            System.out.println("Fehler beim Schließen des Threads: " + ioe);
+        }
+
     }
 
     private void addThread(Socket socket)

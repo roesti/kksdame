@@ -17,11 +17,6 @@ public class DameServerThread extends Thread
     private boolean isPlaying;
     private volatile boolean done;
 
-    public void shutdown()
-    {
-        done = true;
-    }
-
     public DameServerThread(DameServer server, Socket socket)
     {
         super();
@@ -104,7 +99,7 @@ public class DameServerThread extends Thread
             {  
                 System.out.println(ID + " ERROR sending: " + ioe.getMessage());
                 this.server.remove(ID);
-                this.shutdown();
+                //this.shutdown();
             }
         }
 
@@ -129,7 +124,7 @@ public class DameServerThread extends Thread
             {  
                 System.out.println(ID + " ERROR reading: " + ioe.getMessage() + socket + streamIn + done);
                 this.server.remove(ID);
-                this.shutdown();
+                //this.shutdown();
             }
 
         }
@@ -147,6 +142,7 @@ public class DameServerThread extends Thread
 
     public void close() throws IOException
     {
+        done = true;
         this.stop();
         
         if (this.socket != null)
