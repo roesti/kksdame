@@ -13,6 +13,6 @@ class DameServerIdleHelper implements Runnable
     public void run()
     {
         this.server.checkIdleClients();
-        this.server.propagateUsers(); 
+        this.server.propagateUsers();
     }
 }

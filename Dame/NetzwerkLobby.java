@@ -93,6 +93,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
             this.networkClient.sendMessageToServer("SETUSERNAME|" + this.spielerName);
             this.networkClient.sendMessageToServer("GET_ID_SELF");
             this.erzeugeBrowser();
+            
         }
         catch (UnknownHostException uhe)
         {
@@ -142,7 +143,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
     public void erzeugeBrowser()
     {
-        this.mainWindow = new JDialog(this.gui.getMainWindow(), true);
+        this.mainWindow = new JDialog(this.gui.getMainWindow(), false);
         this.mainWindow.setSize(690, 550);
         this.mainWindow.setLocationRelativeTo(this.gui.getMainWindow());
         this.mainWindow.getContentPane().setLayout(null);
@@ -334,7 +335,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
     public void moveToBackgroundAndStartGame()
     {
-        this.mainWindow.setModal(false);
+        /*this.mainWindow.setModal(false);
         this.mainWindow.disable();
         java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -342,7 +343,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
                     gui.getMainWindow().toFront();
                     gui.getMainWindow().repaint();
                 }
-            });
+            });*/
     }
 
     public void challengeRequestCanceledBy(int ID)

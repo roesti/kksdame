@@ -118,14 +118,16 @@ public class DameClient
             int player1_id = Integer.parseInt(msg.split("\\|")[5]);
             int player2_id = Integer.parseInt(msg.split("\\|")[6]);
             
+            this.lobby.getMainWindow().setVisible(false);
+            
             this.lobby.getGUI().startNetworkGame(player1_name, player1_color, player2_name, player2_color, player1_id, player2_id);
         }
         else if (action.equals("OPPONENT_MOVED"))
         {
-            int stein_zeile = Integer.parseInt(msg.split("\\|")[5]);
-            int stein_spalte = Integer.parseInt(msg.split("\\|")[6]);
-            int pos_zeile = Integer.parseInt(msg.split("\\|")[5]);
-            int pos_spalte = Integer.parseInt(msg.split("\\|")[6]);
+            int stein_zeile = Integer.parseInt(msg.split("\\|")[1]);
+            int stein_spalte = Integer.parseInt(msg.split("\\|")[2]);
+            int pos_zeile = Integer.parseInt(msg.split("\\|")[3]);
+            int pos_spalte = Integer.parseInt(msg.split("\\|")[4]);
             
             this.lobby.getGUI().networkOpponentMoved(stein_zeile, stein_spalte, pos_zeile, pos_spalte);
         }
@@ -136,6 +138,8 @@ public class DameClient
         else if (action.equals("GAME_ENDED"))
         {            
             this.lobby.getGUI().networkEndGame();
+            this.lobby.getMainWindow().setVisible(true);
+            
         }
         
         

@@ -199,8 +199,8 @@ public class DameServer implements Runnable
             Calendar calendar = Calendar.getInstance();
             String time = dateFormat.format(calendar.getTime());
             
-            this.findClient(ID).send("CHAT|" + time + "|#35FF2B|++DAME SERVER++|Willkommen auf DameServer 0.1 - have fun!");
-            System.out.println("SEND TO " + ID + ": " + "CHAT|" + time + "|#35FF2B|++DAME SERVER++|Willkommen auf DameServer 0.1 - have fun!");
+            //this.findClient(ID).send("CHAT|" + time + "|#35FF2B|++DAME SERVER++|Willkommen auf DameServer 0.1 - have fun!");
+            //System.out.println("SEND TO " + ID + ": " + "CHAT|" + time + "|#35FF2B|++DAME SERVER++|Willkommen auf DameServer 0.1 - have fun!");
         }
         else if (action.equals("GET_ID_SELF"))
         {
@@ -267,7 +267,7 @@ public class DameServer implements Runnable
         {
             int id_opponent = 0;
             
-            for (int game[] : this.games)
+            for (int[] game : this.games)
             {
                 if (game[0] == ID)
                 {
@@ -294,7 +294,7 @@ public class DameServer implements Runnable
         {
             int id_opponent = 0;
             
-            for (int game[] : this.games)
+            for (int[] game : this.games)
             {
                 if (game[0] == ID)
                 {
@@ -316,20 +316,32 @@ public class DameServer implements Runnable
         {
             int id_opponent = 0;
             
-            for (int game[] : this.games)
+            int remove_index = 0;
+            
+            int i = 0;
+            
+            for (int[] game : this.games)
             {
                 if (game[0] == ID)
                 {
+                    remove_index = i;
                     id_opponent = game[1];
                 }
                 else if (game[1] == ID)
                 {
                     id_opponent = game[0];
                 }
+                
+                i++;
             }
+            
             
             if (id_opponent != 0)
             {
+                this.games.remove(remove_index);
+                this.findClient(ID).setIsPlaying(false);
+                this.findClient(id_opponent).setIsPlaying(false);
+                
                 this.findClient(id_opponent).send("GAME_ENDED");
                 System.out.println("SEND TO " + id_opponent + ": " + "GAME_ENDED");
                 this.findClient(ID).send("GAME_ENDED");

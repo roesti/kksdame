@@ -670,7 +670,7 @@ public class GUI implements UI, MouseListener, ActionListener
             }
             else
             {
-                this.spiel.setNetworkPlayerSelf(this.spiel.getSpieler1());
+                this.spiel.setNetworkPlayerSelf(this.spiel.getSpieler2());
             }
 
             this.spiel.startNetworkGame(player1_name, player1_color, player2_name, player2_color);
@@ -690,6 +690,7 @@ public class GUI implements UI, MouseListener, ActionListener
         }
 
         this.spiel.resetSteinWahl();
+        this.setzeSteine();
     }
 
     public void networkOpponentMoved(int stein_zeile, int stein_spalte, int pos_zeile, int pos_spalte)
@@ -966,7 +967,7 @@ public class GUI implements UI, MouseListener, ActionListener
 
                                     if (this.isNetworkGame)
                                     {
-                                        this.netzwerkLobby.getNetworkClient().sendMessageToServer("MOVE|" + steinGewaehlt.getPosition()[0] + "|" + steinGewaehlt.getPosition()[1] + "|" + arrayPos[0] + "|" + arrayPos[1]);
+                                        this.netzwerkLobby.getNetworkClient().sendMessageToServer("MOVE|" + posSteinGewaehlt[0] + "|" + posSteinGewaehlt[1] + "|" + arrayPos[0] + "|" + arrayPos[1]);
                                     }
 
                                     if (geschlagen)
