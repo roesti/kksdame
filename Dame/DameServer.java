@@ -15,6 +15,7 @@ public class DameServer implements Runnable
     private ServerSocket server = null;
     private Thread       thread = null;
     private ScheduledExecutorService scheduledExecutor;
+    private ArrayList<int[]> games = new ArrayList<int[]>();
 
     public void shutdown()
     {
@@ -193,6 +194,13 @@ public class DameServer implements Runnable
         {
             String username = input_splitted[1];
             this.findClient(ID).setUsername(username);
+            
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+            Calendar calendar = Calendar.getInstance();
+            String time = dateFormat.format(calendar.getTime());
+            
+            this.findClient(ID).send("CHAT|" + time + "|#35FF2B|++DAME SERVER++|Willkommen auf DameServer 0.1 - have fun!");
+            System.out.println("SEND TO " + ID + ": " + "CHAT|" + time + "|#35FF2B|++DAME SERVER++|Willkommen auf DameServer 0.1 - have fun!");
         }
         else if (action.equals("GET_ID_SELF"))
         {
@@ -228,6 +236,105 @@ public class DameServer implements Runnable
             int id_opponent = Integer.parseInt(input_splitted[1]);
             this.findClient(id_opponent).send("CHALLENGE_REQUEST_ACCEPTED|" + ID);
             System.out.println("SEND TO " + id_opponent + ": " + "CHALLENGE_REQUEST_ACCEPTED|" + ID);
+            
+            int get_random_player = Tools.getRandomInt(0, 1);
+            
+            String player1_color = "w";
+            String player2_color = "s";
+            
+            if (get_random_player == 0)
+            {
+                player1_color = "s";
+                player2_color = "w";
+            }
+            
+            int game[] = new int[2];
+            game[0] = id_opponent;
+            game[1] = ID;
+            
+            this.games.add(game);
+            
+            for (DameServerThread client : this.clients)
+            {
+                if (client.getID() == id_opponent || client.getID() == ID)
+                {
+                    client.send("GAME_START|" + this.findClient(id_opponent).getUsername() + "|" + player1_color + "|" + this.findClient(ID).getUsername() + "|" + player2_color + "|" + id_opponent + "|" + ID);
+                    System.out.println("SEND TO " + client.getID() + ": " + "GAME_START|" + this.findClient(id_opponent).getUsername() + "|" + player1_color + "|" + this.findClient(ID).getUsername() + "|" + player2_color + "|" + id_opponent + "|" + ID);
+                } 
+            }
+        }
+        else if (action.equals("MOVE"))
+        {
+            int id_opponent = 0;
+            
+            for (int game[] : this.games)
+            {
+                if (game[0] == ID)
+                {
+                    id_opponent = game[1];
+                }
+                else if (game[1] == ID)
+                {
+                    id_opponent = game[0];
+                }
+            }
+            
+            if (id_opponent != 0)
+            {
+                String stein_zeile = input_splitted[1];
+                String stein_spalte = input_splitted[2];
+                String pos_zeile =  input_splitted[3];
+                String pos_spalte =  input_splitted[4];
+                
+                this.findClient(id_opponent).send("OPPONENT_MOVED|" + stein_zeile + "|" + stein_spalte + "|" + pos_zeile + "|" + pos_spalte);
+                System.out.println("SEND TO " + id_opponent + ": " + "OPPONENT_MOVED|" + stein_zeile + "|" + stein_spalte + "|" + pos_zeile + "|" + pos_spalte);
+            }
+        }
+        else if (action.equals("END_TURN"))
+        {
+            int id_opponent = 0;
+            
+            for (int game[] : this.games)
+            {
+                if (game[0] == ID)
+                {
+                    id_opponent = game[1];
+                }
+                else if (game[1] == ID)
+                {
+                    id_opponent = game[0];
+                }
+            }
+            
+            if (id_opponent != 0)
+            {
+                this.findClient(id_opponent).send("OPPONENT_ENDED_TURN");
+                System.out.println("SEND TO " + id_opponent + ": " + "OPPONENT_ENDED_TURN");
+            }
+        }
+        else if (action.equals("GAME_END"))
+        {
+            int id_opponent = 0;
+            
+            for (int game[] : this.games)
+            {
+                if (game[0] == ID)
+                {
+                    id_opponent = game[1];
+                }
+                else if (game[1] == ID)
+                {
+                    id_opponent = game[0];
+                }
+            }
+            
+            if (id_opponent != 0)
+            {
+                this.findClient(id_opponent).send("GAME_ENDED");
+                System.out.println("SEND TO " + id_opponent + ": " + "GAME_ENDED");
+                this.findClient(ID).send("GAME_ENDED");
+                System.out.println("SEND TO " + ID + ": " + "GAME_ENDED");
+            }
         }
     }
 

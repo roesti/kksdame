@@ -5,6 +5,10 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 import javax.swing.text.*;
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import javax.swing.border.EtchedBorder;
 
 /**
  * Write a description of class NetworkBrowser here.
@@ -18,8 +22,8 @@ public class NetzwerkLobby implements ActionListener, MouseListener
     private GUI gui;
 
     private JDialog mainWindow;
-    //private JTextArea chatTextArea;
-    private JTextPane chatScrollPane;
+    private JTextPane chatPane;
+    private JScrollPane chatScrollArea;
     private JLabel chatTitleLabel;
     private JLabel playerListTitleLabel;
     private JLabel chatTextLabel;
@@ -28,7 +32,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
     private JButton chatSendButton;
     private JPopupMenu playerContextMenu;
     private JMenuItem menuItemChallengePlayer;
-    
+
     private JOptionPane acceptChallengePane;
     private JDialog acceptChallengeDialog;
 
@@ -101,21 +105,26 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
     }
     
+    public GUI getGUI()
+    {
+        return this.gui;
+    }
+
     public DameClient getNetworkClient()
     {
         return this.networkClient;
     }
-    
+
     public JDialog getAcceptChallengeDialog()
     {
         return this.acceptChallengeDialog;
     }
-    
+
     public void setOpponentId(int opponentId)
     {
         this.opponentId = opponentId;
     }
-    
+
     public int getOpponentId()
     {
         return this.opponentId;
@@ -147,10 +156,16 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         this.playerContextMenu.add(this.menuItemChallengePlayer);
 
         //this.chatTextArea = new JTextArea(10, 40);
-        this.chatScrollPane = new JTextPane();
-        this.chatScrollPane.setLocation(10, 40);
-        this.chatScrollPane.setSize(500, 410);
-        this.chatScrollPane.setEditable(false);
+
+        this.chatPane = new JTextPane();
+        this.chatPane.setEditable(false);
+        this.chatPane.setBackground(Color.decode("#9f9f9f"));
+        this.chatPane.setBorder(BorderFactory.createEmptyBorder());
+
+        this.chatScrollArea = new JScrollPane(this.chatPane);
+        this.chatScrollArea.setLocation(10, 40);
+        this.chatScrollArea.setSize(500, 410);
+        this.chatScrollArea.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         this.chatTitleLabel = new JLabel("Chat:");
         this.chatTitleLabel.setSize(50, 20);
@@ -160,8 +175,10 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
         this.playerList = new JList<String>();
         this.playerList.setModel(this.clientListModel);
+        this.playerList.setBackground(Color.decode("#9f9f9f"));
         this.playerList.setLocation(520, 40);
         this.playerList.setSize(150, 410);
+        this.playerList.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         this.playerList.setCellRenderer(new ClientCellRenderer());
         this.playerList.addMouseListener(this);
         this.playerList.setSelectionBackground(Color.blue);
@@ -174,6 +191,10 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         this.chatTextField = new JTextField(30);
         this.chatTextField.setLocation(10, 480);
         this.chatTextField.setSize(500, 25);
+        this.chatTextField.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+        this.chatTextField.setBackground(Color.decode("#9f9f9f"));
+        this.chatTextField.setForeground(Color.white);
+        this.chatTextField.setCaretColor(Color.white);
 
         this.chatTextLabel = new JLabel("Nachricht:");
         this.chatTextLabel.setSize(70, 20);
@@ -185,7 +206,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         this.chatSendButton.addActionListener(this);
 
         this.mainWindow.getContentPane().add(this.chatTitleLabel);
-        this.mainWindow.getContentPane().add(this.chatScrollPane);
+        this.mainWindow.getContentPane().add(this.chatScrollArea);
         this.mainWindow.getContentPane().add(this.playerList);
         this.mainWindow.getContentPane().add(this.chatTextField);
         this.mainWindow.getContentPane().add(this.chatTextLabel);
@@ -219,9 +240,9 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
     public synchronized void writeToChat(String time, String color, String name, String message)
     {
-        StyledDocument doc = this.chatScrollPane.getStyledDocument();
+        StyledDocument doc = this.chatPane.getStyledDocument();
 
-        Style style = this.chatScrollPane.addStyle("Chatstil", null);
+        Style style = this.chatPane.addStyle("Chatstil", null);
 
         StyleConstants.setForeground(style, Color.red);
 
@@ -245,7 +266,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
         }
 
-        StyleConstants.setForeground(style, Color.black);
+        StyleConstants.setForeground(style, Color.white);
 
         try
         {
@@ -255,6 +276,8 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         {
 
         }
+
+        this.chatPane.setCaretPosition(this.chatPane.getDocument().getLength());
 
         //this.chatTextArea.append(message + "\n");
     }
@@ -273,7 +296,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
             {
                 int player_id_received = Integer.parseInt(clients[k].split(";;;")[0]);
                 int player_id_existing = Integer.parseInt(this.clientListModel.getElementAt(i).split(";;;")[0]);
-                
+
                 if (player_id_received == player_id_existing)
                 {
                     found = true;
@@ -294,7 +317,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
             {
                 int player_id_received = Integer.parseInt(clients[i].split(";;;")[0]);
                 int player_id_existing = Integer.parseInt(this.clientListModel.getElementAt(k).split(";;;")[0]);
-                
+
                 if (player_id_received == player_id_existing)
                 {
                     found = true;
@@ -311,7 +334,15 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
     public void moveToBackgroundAndStartGame()
     {
-        JOptionPane.showMessageDialog(this.mainWindow, "GEHT LOS!", "Herausforderung abgelehnt", JOptionPane.INFORMATION_MESSAGE);
+        this.mainWindow.setModal(false);
+        this.mainWindow.disable();
+        java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    gui.getMainWindow().toFront();
+                    gui.getMainWindow().repaint();
+                }
+            });
     }
 
     public void challengeRequestCanceledBy(int ID)
@@ -331,12 +362,9 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         }
 
         // Den offenen Dialog finden ...
-        
-        
+
         Window[] windows = Window.getWindows();
-
         JDialog opened_request_window = null;
-
         for (Window window : windows)
         {
             if (window instanceof JDialog)
@@ -349,7 +377,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
                 }
             }
         }
-        
+
         if (opened_request_window != null)
         {
             opened_request_window.dispose();
@@ -357,10 +385,9 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         }
 
         //this.acceptChallengeDialog.dispatchEvent(new WindowEvent(this.acceptChallengeDialog, WindowEvent.WINDOW_CLOSING));
-        
 
     }
-
+    
     public void challengeRequestDeclinedBy(int ID)
     {
         String player = null;
@@ -463,12 +490,9 @@ public class NetzwerkLobby implements ActionListener, MouseListener
             }
 
         }
-        
-        
-        new DialogWorker(this.acceptChallengeDialog, this, player, ID).execute();
-        
-    }
 
+        new DialogWorker(this.acceptChallengeDialog, this, player, ID).execute();
+    }
     public void actionPerformed (ActionEvent ae)
     {
         if(ae.getSource() == this.chatSendButton)

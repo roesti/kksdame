@@ -12,4 +12,6 @@ public interface UI
     public void displayStartGameMenu();
     public void displayMainGameMenu();
     public void drawSpiel();
+    public void setIsNetworkGame(boolean isNetworkGame);
+    
 }

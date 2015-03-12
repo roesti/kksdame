@@ -13,6 +13,7 @@ public class Spiel
     private UI ui;
     private Spieler spieler1;
     private Spieler spieler2;
+    private Spieler networkPlayerSelf;
     private Spieler current_spieler;
 
     public Spiel(boolean GUI)
@@ -32,6 +33,17 @@ public class Spiel
 
         this.ui.displayMainMenu();
     }
+    
+    public Spieler getNetworkPlayerSelf()
+    {
+        return this.networkPlayerSelf;
+    }
+    
+    public void setNetworkPlayerSelf(Spieler spieler)
+    {
+        this.networkPlayerSelf = spieler;
+    }
+    
 
     public Spieler getCurrentSpieler()
     {
@@ -47,6 +59,7 @@ public class Spiel
     {
         this.spielbrett.resetBrett();
         this.resetSteinWahl();
+        this.ui.setIsNetworkGame(false);
         this.ui.displayStartGameMenu();
 
         // Zufällige Bestimmung, welcher Spieler welche Farbe erhält
@@ -62,6 +75,35 @@ public class Spiel
         {
             this.spieler1.setColor('w');
             this.spieler2.setColor('s');
+            this.current_spieler = this.spieler2;
+        }
+
+        this.ui.displayMainGameMenu();
+
+    }
+    
+    public void startNetworkGame(String player1_name, char player1_color, String player2_name, char player2_color)
+    {
+        this.spielbrett.resetBrett();
+        this.resetSteinWahl();
+        
+        this.ui.setIsNetworkGame(true);
+        
+        this.spieler1.setName(player1_name);
+        this.spieler1.setColor(player1_color);
+        this.spieler2.setName(player2_name);
+        this.spieler2.setColor(player2_color);
+        
+        this.ui.displayStartGameMenu();
+
+        // schwarz beginnt ...
+        
+        if (this.spieler1.getColor() == 's')
+        {
+            this.current_spieler = this.spieler1;
+        }
+        else
+        {
             this.current_spieler = this.spieler2;
         }
 

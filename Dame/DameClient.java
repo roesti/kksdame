@@ -109,6 +109,36 @@ public class DameClient
             int id_opponent = Integer.parseInt(id);
             this.lobby.challengeRequestAcceptedBy(id_opponent);
         }
+        else if (action.equals("GAME_START"))
+        {
+            String player1_name = msg.split("\\|")[1];
+            char player1_color = msg.split("\\|")[2].charAt(0);
+            String player2_name = msg.split("\\|")[3];
+            char player2_color = msg.split("\\|")[4].charAt(0);
+            int player1_id = Integer.parseInt(msg.split("\\|")[5]);
+            int player2_id = Integer.parseInt(msg.split("\\|")[6]);
+            
+            this.lobby.getGUI().startNetworkGame(player1_name, player1_color, player2_name, player2_color, player1_id, player2_id);
+        }
+        else if (action.equals("OPPONENT_MOVED"))
+        {
+            int stein_zeile = Integer.parseInt(msg.split("\\|")[5]);
+            int stein_spalte = Integer.parseInt(msg.split("\\|")[6]);
+            int pos_zeile = Integer.parseInt(msg.split("\\|")[5]);
+            int pos_spalte = Integer.parseInt(msg.split("\\|")[6]);
+            
+            this.lobby.getGUI().networkOpponentMoved(stein_zeile, stein_spalte, pos_zeile, pos_spalte);
+        }
+        else if (action.equals("OPPONENT_ENDED_TURN"))
+        {            
+            this.lobby.getGUI().networkEndTurn();
+        }
+        else if (action.equals("GAME_ENDED"))
+        {            
+            this.lobby.getGUI().networkEndGame();
+        }
+        
+        
     }
 
     public synchronized void receiveClientList(String client_list)

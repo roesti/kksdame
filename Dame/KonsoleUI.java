@@ -20,6 +20,11 @@ public class KonsoleUI implements UI
     {
         this.spiel = spiel;
     }
+    
+    public void setIsNetworkGame(boolean isNetworkGame)
+    {
+        
+    }
 
     public void displayStartGameMenu()
     {

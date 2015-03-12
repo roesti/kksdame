@@ -60,6 +60,7 @@ public class GUI implements UI, MouseListener, ActionListener
     private ImagePanel bewegtesPanel;
     private boolean uiInitialized;
     private boolean spielEnde;
+    private boolean isNetworkGame;
 
     /**
      * Constructor for objects of class KonsoleUI
@@ -71,6 +72,17 @@ public class GUI implements UI, MouseListener, ActionListener
         this.bewegtesPanel = null;
         this.uiInitialized = false;
         this.spielEnde = false;
+        this.isNetworkGame = false;
+    }
+
+    public void setIsNetworkGame(boolean isNetworkGame)
+    {
+        this.isNetworkGame = isNetworkGame;
+    }
+
+    public boolean getIsNetworkGame()
+    {
+        return this.isNetworkGame;
     }
 
     public void displayMainMenu()
@@ -85,40 +97,43 @@ public class GUI implements UI, MouseListener, ActionListener
     public void displayStartGameMenu()
     {
 
-        String spieler1_name = "";
-        String spieler2_name = "";
-        boolean no_valid_player1_name = true;
-        boolean no_valid_player2_name = true;
-
-        while (no_valid_player1_name)
+        if (!this.isNetworkGame)
         {
-            spieler1_name = JOptionPane.showInputDialog(this.mainWindow, "Name des 1. Spielers:", "Namenseingabe", JOptionPane.PLAIN_MESSAGE);
-            
-            if (spieler1_name != null)
+            String spieler1_name = "";
+            String spieler2_name = "";
+            boolean no_valid_player1_name = true;
+            boolean no_valid_player2_name = true;
+
+            while (no_valid_player1_name)
             {
-                if (!spieler1_name.trim().equals(""))
+                spieler1_name = JOptionPane.showInputDialog(this.mainWindow, "Name des 1. Spielers:", "Namenseingabe", JOptionPane.PLAIN_MESSAGE);
+
+                if (spieler1_name != null)
                 {
-                    no_valid_player1_name = false;
+                    if (!spieler1_name.trim().equals(""))
+                    {
+                        no_valid_player1_name = false;
+                    }
                 }
             }
-        }
 
-        this.spiel.getSpieler1().setName(spieler1_name);
+            this.spiel.getSpieler1().setName(spieler1_name);
 
-        while (no_valid_player2_name)
-        {
-            spieler2_name = JOptionPane.showInputDialog(this.mainWindow, "Name des 2. Spielers:", "Namenseingabe", JOptionPane.PLAIN_MESSAGE);
-            
-            if (spieler2_name != null)
+            while (no_valid_player2_name)
             {
-                if (!spieler2_name.trim().equals(""))
+                spieler2_name = JOptionPane.showInputDialog(this.mainWindow, "Name des 2. Spielers:", "Namenseingabe", JOptionPane.PLAIN_MESSAGE);
+
+                if (spieler2_name != null)
                 {
-                    no_valid_player2_name = false;
+                    if (!spieler2_name.trim().equals(""))
+                    {
+                        no_valid_player2_name = false;
+                    }
                 }
             }
-        }
 
-        this.spiel.getSpieler2().setName(spieler2_name);
+            this.spiel.getSpieler2().setName(spieler2_name);
+        }
 
         this.checkerBoard.setVisible(true);
         this.zugStatusLabel.setVisible(true);
@@ -141,8 +156,6 @@ public class GUI implements UI, MouseListener, ActionListener
         {
             label.setVisible(true);
         }
-
-        
 
     }
 
@@ -169,7 +182,7 @@ public class GUI implements UI, MouseListener, ActionListener
 
         this.spielstandSpieler1Label.setText(this.spiel.getSpieler1().getName() + " (" + color_spieler_1 + ")");
         this.spielstandSpieler2Label.setText(this.spiel.getSpieler2().getName() + " (" + color_spieler_2 + ")");
-        
+
         if (!this.uiInitialized)
         {
             this.uiInitialized = true;
@@ -273,9 +286,7 @@ public class GUI implements UI, MouseListener, ActionListener
 
         this.mainWindow = new JFrame();
         this.mainWindow.setSize(1075, 700);
-        
-        
-        
+
         ArrayList<Image> icons = new ArrayList<Image>();
         icons.add(new ImageIcon("images/icon_16.png").getImage());
         icons.add(new ImageIcon("images/icon_32.png").getImage());
@@ -539,7 +550,7 @@ public class GUI implements UI, MouseListener, ActionListener
         this.exitButton.setFont(new Font("Arial", Font.PLAIN, 16));
         this.exitButton.addActionListener(this);
         this.mainWindow.getContentPane().add(exitButton);
-        
+
         this.startSplash = new ImagePanel(this.start_splash);
         this.startSplash.setLocation(60, 150);
         this.mainWindow.getContentPane().add(this.startSplash);
@@ -638,10 +649,74 @@ public class GUI implements UI, MouseListener, ActionListener
         JOptionPane.showMessageDialog(this.mainWindow, name_winner + " gewinnt!");
 
     }
-    
+
     public JFrame getMainWindow()
     {
         return this.mainWindow;
+    }
+
+    public void startNetworkGame(String player1_name, char player1_color, String player2_name, char player2_color, int player1_id, int player2_id)
+    {
+
+        if (this.netzwerkLobby instanceof NetzwerkLobby)
+        {
+            this.steinAngeklickt = false;
+            this.bewegtesPanel = null;
+            this.spielEnde = false;
+
+            if (this.netzwerkLobby.getNetworkClient().getID() == player1_id)
+            {
+                this.spiel.setNetworkPlayerSelf(this.spiel.getSpieler1());
+            }
+            else
+            {
+                this.spiel.setNetworkPlayerSelf(this.spiel.getSpieler1());
+            }
+
+            this.spiel.startNetworkGame(player1_name, player1_color, player2_name, player2_color);
+        }
+
+    }
+
+    public void networkEndTurn()
+    {
+        if (this.spiel.getCurrentSpieler() == this.spiel.getSpieler1())
+        {
+            this.spiel.setCurrentSpieler(this.spiel.getSpieler2());
+        }
+        else
+        {
+            this.spiel.setCurrentSpieler(this.spiel.getSpieler1());
+        }
+
+        this.spiel.resetSteinWahl();
+    }
+
+    public void networkOpponentMoved(int stein_zeile, int stein_spalte, int pos_zeile, int pos_spalte)
+    {
+        Spielstein stein = this.spiel.getSpielbrett().getBrett()[stein_zeile][stein_spalte];
+
+        if (stein != null)
+        {
+            stein.moveTo(pos_zeile, pos_spalte);
+            this.setzeSteine();
+        }
+    }
+
+    public void networkEndGame()
+    {
+        this.setzeSteine();
+        this.spielEnde();
+        
+        java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    netzwerkLobby.getMainWindow().toFront();
+                    netzwerkLobby.getMainWindow().setModal(false);
+                    netzwerkLobby.getMainWindow().enable();
+                    netzwerkLobby.getMainWindow().repaint();
+                }
+            });
     }
 
     // Implementieren der Methoden für den
@@ -802,8 +877,19 @@ public class GUI implements UI, MouseListener, ActionListener
                         // Angeklicktes Feld ist ein Stein auf dem Spielfeld..
                         if (stein != null)
                         {
+                            boolean canMoveStein = false;
+
+                            if (!this.isNetworkGame)
+                            {
+                                canMoveStein = (stein.getColor() == this.spiel.getCurrentSpieler().getColor());
+                            }
+                            else
+                            {
+                                canMoveStein = ((stein.getColor() == this.spiel.getCurrentSpieler().getColor()) && (this.spiel.getCurrentSpieler() == this.spiel.getNetworkPlayerSelf()));
+                            }
+
                             // Angeklickter Stein gehört zum aktuellen Spieler
-                            if (stein.getColor() == this.spiel.getCurrentSpieler().getColor())
+                            if (canMoveStein)
                             {
                                 // Momentan kein Stein ausgewählt..
                                 if (this.bewegtesPanel == null)
@@ -878,6 +964,11 @@ public class GUI implements UI, MouseListener, ActionListener
                                 {
                                     boolean geschlagen = steinGewaehlt.moveTo(arrayPos[0], arrayPos[1]);
 
+                                    if (this.isNetworkGame)
+                                    {
+                                        this.netzwerkLobby.getNetworkClient().sendMessageToServer("MOVE|" + steinGewaehlt.getPosition()[0] + "|" + steinGewaehlt.getPosition()[1] + "|" + arrayPos[0] + "|" + arrayPos[1]);
+                                    }
+
                                     if (geschlagen)
                                     {
                                         ArrayList<int[]> possible_schlag_moves = steinGewaehlt.getPossibleSchlagMoves();
@@ -916,12 +1007,24 @@ public class GUI implements UI, MouseListener, ActionListener
 
                                             this.spiel.resetSteinWahl();
 
+                                            if (this.isNetworkGame)
+                                            {
+                                                this.netzwerkLobby.getNetworkClient().sendMessageToServer("END_TURN");
+                                            }
                                         }
                                         else
                                         {
                                             // Ende
-                                            this.setzeSteine();
-                                            this.spielEnde();
+
+                                            if (this.isNetworkGame)
+                                            {
+                                                this.netzwerkLobby.getNetworkClient().sendMessageToServer("GAME_END");
+                                            }
+                                            else
+                                            {
+                                                this.setzeSteine();
+                                                this.spielEnde();
+                                            }
                                         }
                                     }
 
