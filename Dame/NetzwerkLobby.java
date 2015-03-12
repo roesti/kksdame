@@ -160,7 +160,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
         this.chatPane = new JTextPane();
         this.chatPane.setEditable(false);
-        this.chatPane.setBackground(Color.decode("#9f9f9f"));
+        this.chatPane.setBackground(Color.decode("#464646"));
         this.chatPane.setBorder(BorderFactory.createEmptyBorder());
 
         this.chatScrollArea = new JScrollPane(this.chatPane);
@@ -176,7 +176,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
 
         this.playerList = new JList<String>();
         this.playerList.setModel(this.clientListModel);
-        this.playerList.setBackground(Color.decode("#9f9f9f"));
+        this.playerList.setBackground(Color.decode("#464646"));
         this.playerList.setLocation(520, 40);
         this.playerList.setSize(150, 410);
         this.playerList.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
@@ -193,7 +193,7 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         this.chatTextField.setLocation(10, 480);
         this.chatTextField.setSize(500, 25);
         this.chatTextField.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        this.chatTextField.setBackground(Color.decode("#9f9f9f"));
+        this.chatTextField.setBackground(Color.decode("#464646"));
         this.chatTextField.setForeground(Color.white);
         this.chatTextField.setCaretColor(Color.white);
 
@@ -333,19 +333,6 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         }
     }
 
-    public void moveToBackgroundAndStartGame()
-    {
-        /*this.mainWindow.setModal(false);
-        this.mainWindow.disable();
-        java.awt.EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    gui.getMainWindow().toFront();
-                    gui.getMainWindow().repaint();
-                }
-            });*/
-    }
-
     public void challengeRequestCanceledBy(int ID)
     {
         String player = null;
@@ -471,7 +458,6 @@ public class NetzwerkLobby implements ActionListener, MouseListener
         {
             opened_request_window.dispose();
 
-            this.moveToBackgroundAndStartGame();
         }
 
     }

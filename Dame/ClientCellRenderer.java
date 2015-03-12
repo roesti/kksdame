@@ -20,7 +20,7 @@ public class ClientCellRenderer extends JLabel implements ListCellRenderer<Objec
         if (!isSelected)
         {
             this.setForeground(color);
-            this.setBackground(Color.decode("#9f9f9f"));
+            this.setBackground(Color.decode("#464646"));
         }
         else
         {

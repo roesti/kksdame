@@ -46,6 +46,7 @@ public class GUI implements UI, MouseListener, ActionListener
     private JLabel spielstandSpieler2SteineValue;
     private ArrayList<JLabel> checkerBoardRowColumnLabels;
     private JButton newGameButton;
+    private JButton giveUpButton;
     private JButton exitButton;
     private JMenuBar menuBar;
     private JMenu menuSpiel;
@@ -148,7 +149,18 @@ public class GUI implements UI, MouseListener, ActionListener
         this.spielstandSpieler2DamenValue.setVisible(true);
         this.spielstandSpieler2Steine.setVisible(true);
         this.spielstandSpieler2SteineValue.setVisible(true);
-        this.newGameButton.setVisible(true);
+
+        if (!this.isNetworkGame)
+        {
+            this.newGameButton.setVisible(true);
+            this.giveUpButton.setVisible(false);
+        }
+        else
+        {
+            this.newGameButton.setVisible(false);
+            this.giveUpButton.setVisible(true);
+        }
+
         this.exitButton.setVisible(true);
         this.startSplash.setVisible(false);
 
@@ -543,6 +555,14 @@ public class GUI implements UI, MouseListener, ActionListener
         this.newGameButton.addActionListener(this);
         this.mainWindow.getContentPane().add(newGameButton);
 
+        this.giveUpButton = new JButton("Aufgeben");
+        this.giveUpButton.setLayout(null);
+        this.giveUpButton.setLocation(700, 553);
+        this.giveUpButton.setSize(150, 40);
+        this.giveUpButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        this.giveUpButton.addActionListener(this);
+        this.mainWindow.getContentPane().add(giveUpButton);
+
         this.exitButton = new JButton("Beenden");
         this.exitButton.setLayout(null);
         this.exitButton.setLocation(870, 553);
@@ -598,8 +618,25 @@ public class GUI implements UI, MouseListener, ActionListener
         this.spielstandSpieler2Steine.setVisible(false);
         this.spielstandSpieler2SteineValue.setVisible(false);
         this.newGameButton.setVisible(false);
+        this.giveUpButton.setVisible(false);
         this.exitButton.setVisible(false);
         this.startSplash.setVisible(true);
+
+        this.mainWindow.addWindowListener(new java.awt.event.WindowAdapter()
+            {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent windowEvent)
+                {
+                    if (netzwerkLobby instanceof NetzwerkLobby)
+                    {
+                        if (netzwerkLobby.getNetworkClient() instanceof DameClient)
+                        {
+                            netzwerkLobby.getNetworkClient().sendMessageToServer("DISCONNECT");
+                        }
+                    }
+
+                }
+            });
 
         for (JLabel label : this.checkerBoardRowColumnLabels)
         {
@@ -708,16 +745,39 @@ public class GUI implements UI, MouseListener, ActionListener
     {
         this.setzeSteine();
         this.spielEnde();
-        
-        java.awt.EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    netzwerkLobby.getMainWindow().toFront();
-                    netzwerkLobby.getMainWindow().setModal(false);
-                    netzwerkLobby.getMainWindow().enable();
-                    netzwerkLobby.getMainWindow().repaint();
-                }
-            });
+
+        /*java.awt.EventQueue.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+        netzwerkLobby.getMainWindow().toFront();
+        netzwerkLobby.getMainWindow().setModal(false);
+        netzwerkLobby.getMainWindow().enable();
+        netzwerkLobby.getMainWindow().repaint();
+        }
+        });*/
+    }
+
+    public void networkOpponentQuit()
+    {
+
+        this.spielEnde = true;
+        this.zugStatusLabel.setText("Spiel abgebrochen!");
+
+        this.giveUpButton.setVisible(false);
+        this.newGameButton.setVisible(true);
+
+        JOptionPane.showMessageDialog(this.mainWindow, "Gegner hat das Spiel abgebrochen / verlassen!");
+        this.netzwerkLobby.getMainWindow().setVisible(true);
+
+        /*java.awt.EventQueue.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+        netzwerkLobby.getMainWindow().toFront();
+        netzwerkLobby.getMainWindow().setModal(false);
+        netzwerkLobby.getMainWindow().enable();
+        netzwerkLobby.getMainWindow().repaint();
+        }
+        });*/
     }
 
     // Implementieren der Methoden für den
@@ -1058,7 +1118,34 @@ public class GUI implements UI, MouseListener, ActionListener
         }
         else if (ae.getSource() == this.exitButton)
         {
+            if (this.netzwerkLobby instanceof NetzwerkLobby)
+            {
+                if (this.netzwerkLobby.getNetworkClient() instanceof DameClient)
+                {
+                    this.netzwerkLobby.getNetworkClient().sendMessageToServer("DISCONNECT");
+                }
+            }
+
             System.exit(0);
+        }
+        else if (ae.getSource() == this.giveUpButton)
+        {
+            if (this.netzwerkLobby instanceof NetzwerkLobby)
+            {
+                if (this.netzwerkLobby.getNetworkClient() instanceof DameClient)
+                {
+                    this.netzwerkLobby.getNetworkClient().sendMessageToServer("GIVE_UP");
+                }
+            }
+
+            this.spielEnde = true;
+            this.zugStatusLabel.setText("Spiel abgebrochen!");
+
+            this.giveUpButton.setVisible(false);
+            this.newGameButton.setVisible(true);
+            
+            this.netzwerkLobby.getMainWindow().setVisible(true);
+
         }
         else if (ae.getSource() == this.menuItemNeuesSpiel)
         {
@@ -1069,6 +1156,14 @@ public class GUI implements UI, MouseListener, ActionListener
         }
         else if (ae.getSource() == this.menuItemExit)
         {
+            if (this.netzwerkLobby instanceof NetzwerkLobby)
+            {
+                if (this.netzwerkLobby.getNetworkClient() instanceof DameClient)
+                {
+                    this.netzwerkLobby.getNetworkClient().sendMessageToServer("DISCONNECT");
+                }
+            }
+            
             System.exit(0);
         }
         else if (ae.getSource() == this.menuItemNetworkSpiel)

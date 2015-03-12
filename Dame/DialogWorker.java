@@ -37,7 +37,6 @@ public class DialogWorker extends SwingWorker<Integer, Integer>
         if (answer == 0)
         {
             this.lobby.getNetworkClient().sendMessageToServer("CHALLENGE_REQUEST_ACCEPT|" + this.player_id);
-            this.lobby.moveToBackgroundAndStartGame();
         }
         else
         {

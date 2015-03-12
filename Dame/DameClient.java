@@ -139,7 +139,10 @@ public class DameClient
         {            
             this.lobby.getGUI().networkEndGame();
             this.lobby.getMainWindow().setVisible(true);
-            
+        }
+        else if (action.equals("OPPONENT_QUIT"))
+        {
+            this.lobby.getGUI().networkOpponentQuit();
         }
         
         
