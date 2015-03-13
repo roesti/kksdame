@@ -1,7 +1,7 @@
-# kksdame
-KKSDame - Ein Dame-Spiel, realisiert in Java (Console + GUI Version)
+# KKSDame
+------------------------------
+Ein Dame-Spiel, realisiert in Java (Console + GUI Version)
 
-KKSDame
 ------------------------------
 
 Das Spiel orientiert sich am Brettspiel "Dame". In der CLI-Version muss jeder Zug über die Tastatur
