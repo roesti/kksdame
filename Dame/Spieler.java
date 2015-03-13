@@ -82,6 +82,33 @@ public class Spieler
         return steine_count;
     }
     
+    public boolean canMove()
+    {
+        boolean canMove = false;
+        
+        for (int i = 0; i < 8; i++)
+        {
+            for (int k = 0; k < 8; k++)
+            {
+                if (this.spiel.getSpielbrett().getBrett()[i][k] != null)
+                {
+                    if (this.spiel.getSpielbrett().getBrett()[i][k].getColor() == this.getColor())
+                    {
+                        Spielstein stein = this.spiel.getSpielbrett().getBrett()[i][k];
+                        
+                        if ((stein.getPossibleMoves().size() > 0) || (stein.getPossibleSchlagMoves().size() > 0))
+                        {
+                            canMove = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return canMove;
+    }
+    
+    
     public int countSteineGesamt()
     {
         return (this.countDamen() + this.countNormaleSteine());

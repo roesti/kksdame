@@ -673,17 +673,29 @@ public class GUI implements UI, MouseListener, ActionListener
     {   
         String name_winner = this.spiel.getSpieler1().getName().toUpperCase();
         String name_loser = this.spiel.getSpieler2().getName();
+        String message = null;
         this.spielEnde = true;
 
-        if (this.spiel.getSpieler1().countSteineGesamt() == 0)
+        if (this.spiel.getSpieler1().countSteineGesamt() > this.spiel.getSpieler2().countSteineGesamt())
+        {
+            name_winner = this.spiel.getSpieler1().getName().toUpperCase();
+            name_loser = this.spiel.getSpieler2().getName();
+            message = name_winner + " gewinnt!";
+        }
+        else if (this.spiel.getSpieler1().countSteineGesamt() < this.spiel.getSpieler2().countSteineGesamt())
         {
             name_winner = this.spiel.getSpieler2().getName().toUpperCase();
             name_loser = this.spiel.getSpieler1().getName();
+            message = name_winner + " gewinnt!";
+        }
+        else
+        {
+            message = "Unentschieden!";
         }
 
-        this.zugStatusLabel.setText(name_winner + " gewinnt!");
+        this.zugStatusLabel.setText(message);
 
-        JOptionPane.showMessageDialog(this.mainWindow, name_winner + " gewinnt!");
+        JOptionPane.showMessageDialog(this.mainWindow, message);
 
     }
 
@@ -1057,20 +1069,40 @@ public class GUI implements UI, MouseListener, ActionListener
                                     {
                                         if ((this.spiel.getSpieler1().countSteineGesamt() > 0) && (this.spiel.getSpieler2().countSteineGesamt() > 0))
                                         {
+
+                                            Spieler nextPlayer = null;
+
                                             if (this.spiel.getCurrentSpieler() == this.spiel.getSpieler1())
                                             {
-                                                this.spiel.setCurrentSpieler(this.spiel.getSpieler2());
+                                                nextPlayer = this.spiel.getSpieler2();
                                             }
                                             else
                                             {
-                                                this.spiel.setCurrentSpieler(this.spiel.getSpieler1());
+                                                nextPlayer = this.spiel.getSpieler1();
                                             }
 
-                                            this.spiel.resetSteinWahl();
-
-                                            if (this.isNetworkGame)
+                                            if (nextPlayer.canMove() == true)
                                             {
-                                                this.netzwerkLobby.getNetworkClient().sendMessageToServer("END_TURN");
+                                                this.spiel.setCurrentSpieler(nextPlayer);
+
+                                                this.spiel.resetSteinWahl();
+
+                                                if (this.isNetworkGame)
+                                                {
+                                                    this.netzwerkLobby.getNetworkClient().sendMessageToServer("END_TURN");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (this.isNetworkGame)
+                                                {
+                                                    this.netzwerkLobby.getNetworkClient().sendMessageToServer("GAME_END");
+                                                }
+                                                else
+                                                {
+                                                    this.setzeSteine();
+                                                    this.spielEnde();
+                                                }
                                             }
                                         }
                                         else
@@ -1143,7 +1175,7 @@ public class GUI implements UI, MouseListener, ActionListener
 
             this.giveUpButton.setVisible(false);
             this.newGameButton.setVisible(true);
-            
+
             this.netzwerkLobby.getMainWindow().setVisible(true);
 
         }
@@ -1163,7 +1195,7 @@ public class GUI implements UI, MouseListener, ActionListener
                     this.netzwerkLobby.getNetworkClient().sendMessageToServer("DISCONNECT");
                 }
             }
-            
+
             System.exit(0);
         }
         else if (ae.getSource() == this.menuItemNetworkSpiel)
